@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 37 — 11 November 2026
+- New presentations: Anaphylaxis, Itching, and Pain and aches, each with bedside history, symptoms, examination by system and a bedside reminder. 42 presentations in total.
+- Interface: smooth scrolling; on desktop the presentation bar stays at the top with section pills (History, Details, Context, Symptoms, Examination, Plan) that highlight the current section; a thin bar at the top of the screen shows position in the form; cards fade in as they come into view; softer card shadows and hover, press and focus feedback on buttons and fields.
+- Motion is switched off for anyone whose device is set to reduce motion.
+
 ## Version 36 — 11 November 2026
 - Vital signs outside each field's limits (for example SpO₂ 150 %, a negative heart rate, or a Fahrenheit temperature) are refused with a message instead of being written into the note.
 - "Mark all remaining symptoms as asked and denied" now asks for confirmation and states how many symptoms it will record.
