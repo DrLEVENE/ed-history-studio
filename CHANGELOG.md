@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 35 — 11 November 2026
+- New presentation: Foreign body (ear, nose, throat, airway, swallowed, eye, soft tissue, rectal, vaginal, urethral) with bedside history, symptoms, examination by system and a bedside reminder. 39 presentations in total.
+
 ## Version 34 — 10 November 2026
 - Symptom hint now matches behaviour: only symptoms marked − are recorded as denied; unselected symptoms are omitted.
 - Changing any entry after generating marks the note as out of date, and Copy is blocked until it is regenerated.
