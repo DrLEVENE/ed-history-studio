@@ -1,35 +1,137 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ED History Studio</title><style>*{box-sizing:border-box}body{margin:0;background:#f3f6f7;color:#17333b;font:15px system-ui}header{background:#123b43;color:white;padding:25px 5%}header small{color:#9cd3cd;letter-spacing:2px}h1{margin:10px 0;font-size:30px}header p{color:#c5dcdf}main{max-width:1300px;margin:25px auto;padding:0 24px}.bar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:22px}select,input,textarea{font:inherit;width:100%;padding:11px;border:1px solid #c9d7da;border-radius:7px;background:white;color:#17333b}select:focus,input:focus,textarea:focus{outline:2px solid #278b82}.layout{display:grid;grid-template-columns:1.1fr 1fr;gap:24px}.card{background:white;border:1px solid #dce5e7;border-radius:12px;padding:23px;margin-bottom:18px}h2{font-size:18px;margin:0 0 18px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}label{display:block;font-size:13px;font-weight:600}label input,label select{margin-top:6px}.wide{grid-column:1/-1}.symptoms{display:grid;grid-template-columns:1fr 1fr;gap:12px}.symptoms label{display:flex;align-items:center;justify-content:space-between;gap:8px}.symptoms select{width:116px;padding:7px}button{font:inherit;border:0;border-radius:7px;padding:11px 18px;background:#167d73;color:white;cursor:pointer}button.secondary{background:#e8f0f0;color:#20434a}.output{position:sticky;top:20px}textarea{min-height:440px;line-height:1.7;resize:vertical}.hint{font-size:12px;color:#607a80;line-height:1.6}.pill{color:#18786e;background:#e6f4ef;border-radius:20px;padding:7px 12px;font-size:12px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}@media(max-width:850px){.layout{grid-template-columns:1fr}.output{position:static}.fields{grid-template-columns:1fr}.symptoms{grid-template-columns:1fr}h1{font-size:25px}}.symptoms label.symptom-check{justify-content:flex-start;gap:10px;padding:12px;border:1px solid #dce5e7;border-radius:7px}.symptom-check input{width:18px;height:18px;margin:0;accent-color:#167d73}.quick-field{min-width:0}.quick-options{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.quick-options label{display:flex;align-items:center;gap:5px;padding:7px 8px;background:#f1f7f6;border:1px solid #d6e6e2;border-radius:6px;font-size:12px;font-weight:400;cursor:pointer}.quick-options input{width:16px;height:16px;margin:0;accent-color:#167d73}.quick-field>select{margin-top:7px}.quick-field>input:not([type=hidden]){margin-top:8px}[hidden]{display:none!important}.exam-quick{padding:12px;border:1px solid #dce5e7;border-radius:8px;min-width:0}.exam-quick>select{margin:8px 0}.exam-quick>input:not([type=hidden]){margin-top:10px}.exam-quick .quick-options{gap:5px}.vitals-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}@media(max-width:550px){.vitals-grid{grid-template-columns:repeat(2,minmax(0,1fr))}} .quick-options label,.symptoms label.symptom-check,.shortcuts button{min-height:44px;cursor:pointer;font-size:13px;padding:9px;line-height:1.3}.quick-options input,.symptom-check input{flex:none;width:19px;height:19px}.quick-options label:has(input:checked),.symptom-check:has(input:checked),.shortcuts button[aria-pressed=true]{outline:2px solid #167d73;background:#daf3eb!important;color:#123b43}.shortcuts button{background:#f1f7f6;color:#17333b;border:1px solid #cadeda}.symptom-state{padding:10px;border:1px solid #dce5e7;border-radius:8px}.symptom-state select{width:100%;margin-top:7px}#normal-exam details{margin:8px 0}#normal-exam summary{cursor:pointer;padding:8px 0;font-weight:650}#normal-exam strong{display:block;font-size:13px;margin-top:10px}#normal-exam .exam-quick>label>input[type=checkbox]{width:20px;vertical-align:middle} .rapid-row{display:grid;grid-template-columns:minmax(0,1fr) 44px 44px;gap:3px;align-items:center;border-bottom:1px solid #dae6e5;padding:4px 0}.rapid-row span{font-size:13px;font-weight:600}.rapid-row button{min-height:44px;padding:4px;background:#edf3f3;color:#23434a;font-size:20px}.rapid-row button[aria-pressed=true]{background:#126c63;color:white;outline:2px solid #174d47}.rapid-row select{grid-column:1/-1;width:auto;justify-self:end;padding:3px;font-size:12px} .quickbar{display:none}@media(max-width:850px){.quickbar{display:flex;gap:10px;position:fixed;left:0;right:0;bottom:0;z-index:20;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid #d8e4e6;box-shadow:0 -4px 14px rgba(18,59,67,.12)}.quickbar select{flex:1;min-width:0;margin:0}.quickbar button{flex:none;white-space:nowrap}main{padding-bottom:90px}main h2{scroll-margin-top:12px}}@media(max-width:550px){input,select,textarea{font-size:16px}}
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ED History Studio</title><style>
+:root{--ink:#12262b;--muted:#566c71;--paper:#f2f5f4;--sheet:#fff;--rule:#dde5e3;--rule-strong:#c2d0cd;--teal:#0e6b62;--teal-dark:#0a524b;--tint:#e4f3ee;--slate:#44545a;--abn:#fff3ea;--abn-on:#9a4a12;--bar:#0f3b42}
+*{box-sizing:border-box}
 html{scroll-behavior:smooth}
-header{background:linear-gradient(135deg,#0f343b 0%,#17545a 100%)}
-.card{box-shadow:0 1px 2px rgba(18,59,67,.05),0 10px 28px -20px rgba(18,59,67,.28);transition:box-shadow .25s ease,border-color .25s ease}
-.card:focus-within{border-color:#b6d6cf;box-shadow:0 1px 2px rgba(18,59,67,.06),0 14px 34px -18px rgba(18,59,67,.38)}
-select,input,textarea{transition:border-color .15s ease,box-shadow .15s ease}
-select:focus,input:focus,textarea:focus{box-shadow:0 0 0 4px rgba(39,139,130,.16)}
-button{transition:background-color .15s ease,box-shadow .15s ease,transform .08s ease}
-button:hover{background:#126a61}button.secondary:hover{background:#dbe8e8}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif}
+[hidden]{display:none!important}
+/* App bar: one row for what the encounter is and where you are in it */
+.appbar{position:sticky;top:0;z-index:15;display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap;padding:9px max(24px,calc((100vw - 1300px)/2 + 24px));background:var(--bar);color:#fff}
+.appbar h1{margin:0;font-size:16px;font-weight:650;letter-spacing:.1px;white-space:nowrap}
+.appbar .pick{flex:0 1 300px;min-width:200px;margin:0}
+.appbar select{margin:0;padding:8px 10px;border-color:transparent;font-weight:600}
+.appbar #reset{margin-left:auto;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4);padding:7px 14px}
+.appbar #reset:hover{background:rgba(255,255,255,.12)}
+.secnav{display:flex;gap:2px;flex-wrap:wrap}
+.secnav button{padding:7px 12px;border-radius:999px;background:transparent;color:#cfe3e1;font-size:13.5px;font-weight:500}
+.secnav button:hover{background:rgba(255,255,255,.12);color:#fff}
+.secnav button[aria-current=true]{background:#fff;color:var(--bar)}
+#progress{position:fixed;top:0;left:0;height:3px;width:100%;background:#58d3c2;transform:scaleX(0);transform-origin:0 50%;z-index:40;pointer-events:none}
+main{max-width:1300px;margin:0 auto;padding:20px 24px 40px}
+.layout{display:grid;grid-template-columns:1.12fr 1fr;gap:22px}
+.card{background:var(--sheet);border:1px solid var(--rule);border-radius:12px;padding:20px 22px;margin-bottom:14px}
+h2{font-size:17px;font-weight:650;margin:0 0 14px}
+h2.sub{font-size:14px;margin:22px 0 10px}
+main h2{scroll-margin-top:calc(var(--barh,56px) + 16px)}
+.hint{font-size:12.5px;color:var(--muted);line-height:1.5;margin:0 0 12px}
+h2+.hint{margin-top:-8px}
+/* Fields */
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
+.wide{grid-column:1/-1}
+label{display:block;font-size:13px;font-weight:600;color:#2c4449}
+select,input,textarea{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--rule-strong);border-radius:8px;background:#fff;color:var(--ink);transition:border-color .15s ease,box-shadow .15s ease}
+label input,label select,label textarea{margin-top:5px}
+input::placeholder,textarea::placeholder{color:#8a9b9e}
+select:focus,input:focus,textarea:focus{outline:2px solid var(--teal);outline-offset:0;box-shadow:0 0 0 4px rgba(14,107,98,.14)}
+input[type=number]{font-variant-numeric:tabular-nums}
+input[type=checkbox]{accent-color:var(--teal)}
+textarea{line-height:1.6;resize:vertical}
+#intro{grid-template-columns:repeat(6,minmax(0,1fr))}
+#intro>label{grid-column:span 3}
+#intro>label:nth-child(1){grid-column:span 1}
+#intro>label:nth-child(3){grid-column:span 2}
+#intro>label.wide,#intro>label:nth-child(4){grid-column:1/-1}
+.pc-row{display:grid;grid-template-columns:1.6fr 1fr 40px;gap:10px;align-items:end;margin-bottom:10px}
+.pc-row .remove{padding:0;height:40px;font-size:20px;line-height:1}
+/* Buttons */
+button{font:inherit;border:0;border-radius:8px;padding:10px 16px;background:var(--teal);color:#fff;font-weight:600;cursor:pointer;transition:background-color .15s ease,transform .08s ease}
+button:hover{background:var(--teal-dark)}
 button:active{transform:translateY(1px)}
-button:focus-visible,summary:focus-visible{outline:2px solid #278b82;outline-offset:2px}
-.quick-options label{transition:background-color .15s ease,outline-color .15s ease}
-.quick-options label:hover{background:#e6f2ef}
-.rapid-row{transition:background-color .15s ease}.rapid-row:hover{background:#f6faf9}
-.rapid-row button:hover{background:#dde9e8}.rapid-row button[aria-pressed=true]:hover{background:#126c63}
-.shortcuts button:hover{background:#e3f0ec}
-#normal-exam summary{border-radius:6px;transition:color .15s ease}#normal-exam summary:hover{color:#167d73}
-.secnav{display:none}
-#progress{position:fixed;top:0;left:0;height:3px;width:100%;background:#2fb3a3;transform:scaleX(0);transform-origin:0 50%;z-index:40;pointer-events:none}
+button.secondary{background:#e8efee;color:#1f3f45}
+button.secondary:hover{background:#dae6e4}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.appbar button:focus-visible,.appbar select:focus{outline-color:#8fe3d6}
+/* Chips: one tap to pick, tap again to clear */
+.quick-field{min-width:0}
+.quick-options{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.quick-options label,.quick-options button{position:relative;display:inline-flex;align-items:center;min-height:36px;padding:6px 12px;border:1px solid var(--rule-strong);border-radius:999px;background:#fff;color:var(--ink);font-size:13.5px;font-weight:500;line-height:1.2;cursor:pointer;transition:background-color .12s ease,border-color .12s ease,color .12s ease}
+.quick-options label:hover,.quick-options button:hover{background:#eef5f3;border-color:#9fb8b3}
+.quick-options label>input[type=checkbox]{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.quick-options label:has(input:checked),.quick-options button[aria-pressed=true]{background:var(--teal)!important;border-color:var(--teal);color:#fff}
+.quick-options label.abnormal:has(input:checked){background:var(--abn-on)!important;border-color:var(--abn-on)}
+.quick-options label:has(input:focus-visible){outline:2px solid var(--teal);outline-offset:2px}
+.quick-options.scale button{min-width:36px;justify-content:center;padding:6px 8px;font-variant-numeric:tabular-nums}
+.quick-options button.more{border-style:dashed;color:var(--muted);background:transparent}
+.quick-options button.more:hover{color:var(--ink)}
+select.chipped{display:none}
+.quick-field>select{margin-top:6px}
+.quick-field>input:not([type=hidden]),.exam-quick>input:not([type=hidden]){margin-top:8px}
+/* Symptoms */
+.symptoms{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}
+.rapid-row{display:grid;grid-template-columns:minmax(0,1fr) 42px 42px;gap:4px;align-items:center;border-bottom:1px solid var(--rule);padding:4px 0 4px 6px;border-radius:6px;transition:background-color .12s ease}
+.rapid-row:hover{background:#f5f9f8}
+.rapid-row span{font-size:13.5px;font-weight:500}
+.rapid-row button{min-height:36px;padding:0;background:#edf2f1;color:#2c4449;font-size:19px;font-weight:500}
+.rapid-row button:hover{background:#dde8e6}
+.rapid-row button[data-value=present][aria-pressed=true]{background:var(--teal);color:#fff}
+.rapid-row button[data-value=absent][aria-pressed=true]{background:var(--slate);color:#fff}
+.rapid-row[data-state=present] span{font-weight:650;color:var(--teal-dark)}
+.rapid-row[data-state=absent] span{color:var(--slate)}
+.rapid-row select{grid-column:1/-1;width:auto;justify-self:end;padding:3px 6px;font-size:12px}
+.symptoms>button.wide{margin-top:12px}
+.symptoms label.symptom-check,label.symptom-check{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--rule);border-radius:8px;font-weight:500}
+.symptom-check input{flex:none;width:19px;height:19px;margin:0}
+.symptom-state{padding:10px;border:1px solid var(--rule);border-radius:8px}
+.symptom-state select{width:100%;margin-top:7px}
+/* Examination */
+.exam-quick{min-width:0;padding:12px 0 2px;border-top:1px solid var(--rule)}
+.exam-quick>label:first-child{font-size:13.5px;color:var(--ink)}
+.exam-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.exam-head .quick-options{margin-top:0;flex:none;flex-wrap:nowrap}
+.exam-head .quick-options button{min-height:28px;padding:3px 10px;font-size:12.5px;color:var(--muted)}
+.exam-head .quick-options button[aria-pressed=true]{color:#fff}
+.exam-quick>select{margin:8px 0}
+#normal-exam>details.exam-quick{margin:10px 0;padding:0 16px;border:1px solid var(--rule);border-radius:10px;background:#fff}
+#normal-exam>details.exam-quick[open]{padding-bottom:14px}
+#normal-exam summary{display:flex;align-items:center;gap:10px;cursor:pointer;padding:13px 0;font-weight:650;font-size:14.5px;list-style:none}
+#normal-exam summary::-webkit-details-marker{display:none}
+#normal-exam summary::before{content:"";flex:none;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s ease}
+#normal-exam details[open]>summary::before{transform:rotate(45deg)}
+#normal-exam summary[data-count]::after{content:attr(data-count);margin-left:auto;padding:2px 9px;border-radius:999px;background:var(--tint);color:var(--teal-dark);font-size:12px;font-weight:600}
+#normal-exam strong{display:block;font-size:12.5px;color:var(--muted);font-weight:600;margin-top:12px}
+#normal-exam .exam-quick>label>input[type=checkbox]{width:19px;height:19px;vertical-align:middle}
+#normal-exam h2{margin-top:6px}
+#normal-exam details>label,#normal-exam details>.fields,#normal-exam details>.quick-field{margin-top:14px}
+#normal-exam details>.exam-quick{margin-top:12px}
+.vitals-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
+/* Note */
+.output{position:sticky;top:calc(var(--barh,56px) + 14px);box-shadow:0 12px 30px -22px rgba(18,59,67,.45)}
+#output{min-height:min(54vh,520px);background:#fcfdfc;font-size:14.5px;line-height:1.65}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 10px}
+#status{margin:0;color:#2c4449}
+.private{margin:10px 0 0;font-size:12px;color:var(--muted)}
+#version{margin:6px 0 0}
+pre{white-space:pre-wrap;font:inherit;font-size:13px}
+.quickbar{display:none}
 .reveal{opacity:0}.reveal.in{opacity:1;transition:opacity .5s ease}
-@media(min-width:851px){
-.bar{position:sticky;top:0;z-index:15;margin:0 -12px 18px;padding:12px 12px 10px;background:rgba(243,246,247,.9);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid transparent;transition:box-shadow .25s ease,border-color .25s ease}
-.bar.stuck{border-bottom-color:#d6e2e4;box-shadow:0 10px 18px -16px rgba(18,59,67,.45)}
-.secnav{display:flex;flex-basis:100%;gap:6px;flex-wrap:wrap}
-.secnav button{padding:6px 13px;border-radius:20px;background:transparent;color:#3d5d64;font-size:13px;border:1px solid transparent}
-.secnav button:hover{background:#e3eeee}
-.secnav button[aria-current=true]{background:#123b43;color:#fff}
-.output{top:calc(var(--barh,132px) + 14px)}
-main h2{scroll-margin-top:calc(var(--barh,132px) + 18px)}
+@media(pointer:coarse){.quick-options label,.quick-options button{min-height:44px}.rapid-row{grid-template-columns:minmax(0,1fr) 46px 46px}.rapid-row button{min-height:44px}.exam-head .quick-options button{min-height:36px}}
+@media(max-width:850px){
+.appbar{position:static;padding:10px 14px}
+.appbar .pick{flex:1 1 100%;order:3}
+.secnav{display:none}
+main{padding:14px 14px 96px}
+.layout{grid-template-columns:1fr}
+.output{position:static}
+.fields,.symptoms{grid-template-columns:1fr}
+#intro{grid-template-columns:1fr 1fr}#intro>label,#intro>label:nth-child(3){grid-column:1/-1}#intro>label:nth-child(1),#intro>label:nth-child(2){grid-column:span 1}
+main h2{scroll-margin-top:12px}
+.quickbar{display:flex;gap:10px;position:fixed;left:0;right:0;bottom:0;z-index:20;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--rule);box-shadow:0 -4px 14px rgba(18,59,67,.12)}
+.quickbar select{flex:1;min-width:0;margin:0}
+.quickbar button{flex:none;white-space:nowrap}
 }
+@media(max-width:550px){input,select,textarea{font-size:16px}.card{padding:16px}.vitals-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pc-row{grid-template-columns:1fr 1fr 40px}.exam-head{flex-wrap:wrap}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}.reveal{opacity:1}}
-</style><div id="progress" aria-hidden="true"></div><header><small>LEVENE · CLINICAL WORKSPACE</small><h1>ED History Studio</h1><p>Bedside prompts. Clear narratives. Ready for your EHR.</p></header><main><div class="bar"><label style="flex:1;min-width:230px">Presentation<select id="condition"></select></label><span class="pill">Browser-only processing · No patient records saved</span><button class="secondary" id="reset">Clear encounter</button><nav class="secnav" id="secnav" aria-label="Sections"></nav></div><div class="layout"><section><div class="card"><h2>01 / Presenting history</h2><div class="fields" id="intro"><label>Age<input id="age" type="number" min="0" step="any"></label><label>Age unit<select id="ageunit"><option>years</option><option>months</option><option>weeks</option><option>days</option></select></label><label>Sex<select id="sex"><option value="">Not entered</option><option>Male</option><option>Female</option></select></label><label>Chronic illnesses / H/o<input id="comorb"></label><label class="wide">Maintained on medication<input id="regular-meds" placeholder="Medication names, doses and frequency, e.g. amlodipine 5 mg daily"></label><label>Medication compliance<select id="compliance"><option value="">Not entered</option><option>compliant with medications</option><option>not compliant with medications</option><option>partially compliant with medications</option><option>compliance uncertain</option><option>not on regular medication</option></select></label><label>History / negative findings source<select id="source"><option>Patient</option><option>Parent</option><option>Caregiver</option><option>Ambulance crew</option></select></label></div><h2 style="margin-top:24px">Presenting complaints</h2><div id="pcs"></div><button id="addpc" class="secondary" style="margin-top:12px">+ Add complaint</button></div><div class="card"><p class="hint">Quick history choices: select or tick what applies. Use Specify for extra details. Unselected history choices are omitted.</p><h2 id="details-title">Presentation details</h2><div class="fields" id="fields"></div></div><div class="card"><h2>02 / Additional history / context</h2><label>Other relevant history<textarea id="extra" style="min-height:100px" placeholder="Add relevant details, in your own words"></textarea></label></div><div class="card"><h2>03 / Associated symptoms</h2><p class="hint">+ = present. − = explicitly denied, recorded under Patient denies (or attributed to the history source). Symptoms left unselected are omitted from the note. Review every symptom before copying.</p><div class="symptoms" id="symptoms"></div></div><div class="card"><h2>04 / Examination — selected presentation</h2><p class="hint">Tick observed findings or select an assessment. Blank and Not assessed are omitted from the note. Normal findings are recorded only when explicitly selected. Add side, site or measurements where needed. Consent/chaperone for intimate examinations.</p><div id="exam" class="fields"></div><label>Other examination / repeat findings<textarea id="examother" style="min-height:90px"></textarea></label></div><div class="card"><h2>05 / Plan and medication orders</h2><label>Plan<textarea id="plan" style="min-height:100px"></textarea></label><label style="margin:16px 0"><input id="paeds" type="checkbox" style="width:auto"> Enable paediatric medication arithmetic for this encounter</label><div id="medpanel" hidden><p class="hint">Harriet Lane automatic formulary: pending verified edition and medicine list. The calculator below only multiplies a clinician-entered prescription; it does not select or validate a dose. Use mg/kg/dose, not mg/kg/day. Neonatal regimens and age, indication, route, renal and hepatic adjustments require separate verification.</p><div class="fields"><label>Measured weight (kg)<input type="number" min="0" step="any" id="weight"></label><label>Medicine<input id="medname"></label><label>Route<input id="route"></label><label>Frequency / duration<input id="frequency"></label><label>Verified prescription (mg/kg/dose)<input type="number" min="0" step="any" id="dose"></label><label>Verified maximum (mg per dose)<input type="number" min="0" step="any" id="maxdose"></label><label>Formulation: mg<input type="number" min="0" step="any" id="strengthmg"></label><label>Formulation: per mL<input type="number" min="0" step="any" id="strengthml"></label><label>Reference: edition / page / indication<input id="reference"></label></div><p id="doseout" class="hint" role="status"></p><button id="calc" class="secondary">Calculate entered prescription</button><label style="margin:12px 0"><input type="checkbox" id="verified" style="width:auto"> I checked age, indication, route, frequency, maximum, formulation and adjustments against the reference.</label><button id="addorder" class="secondary">Add checked order to plan</button><pre id="medlist" style="white-space:pre-wrap"></pre></div></div></section><section><div class="card output"><h2>Clinical note</h2><p class="hint">Generate after entering findings. Edit the text below before copying into Symone. This tool documents your entries; it does not assess severity or recommend treatment.</p><textarea id="output" aria-label="Clinical note" placeholder="Your narrative will appear here. No normal findings or negatives are assumed."></textarea><div class="actions"><button id="generate">Generate history</button><button class="secondary" id="copy">Copy to EHR</button></div><p id="status" class="hint" role="status">No direct connection to Symone. Copy and paste into the appropriate note field.</p></div></section></div><p class="hint" id="version">Version 37 · 11 November 2026</p></main><nav class="quickbar" aria-label="Quick actions"><select id="jump" aria-label="Jump to section"></select><button id="quickgen" type="button">Generate &amp; view note</button></nav><script>
+.quick-options label.abnormal{background:var(--abn);border-color:#ecd3bf}
+</style><div id="progress" aria-hidden="true"></div><header class="appbar"><h1>ED History Studio</h1><div class="pick"><select id="condition" aria-label="Presentation"></select></div><nav class="secnav" id="secnav" aria-label="Sections"></nav><button class="secondary" id="reset">Clear encounter</button></header><main><div class="layout"><section><div class="card"><h2 id="sec-patient">Patient</h2><div class="fields" id="intro"><label>Age<input id="age" type="number" min="0" step="any"></label><label>Age unit<select id="ageunit"><option>years</option><option>months</option><option>weeks</option><option>days</option></select></label><label>Sex<select id="sex"><option value="">Not entered</option><option>Male</option><option>Female</option></select></label><label>Chronic illnesses<input id="comorb" placeholder="e.g. HTN, DM, asthma"></label><label class="wide">Regular medication<input id="regular-meds" placeholder="Names, doses and frequency, e.g. amlodipine 5 mg daily"></label><label>Medication compliance<select id="compliance"><option value="">Not entered</option><option>compliant with medications</option><option>not compliant with medications</option><option>partially compliant with medications</option><option>compliance uncertain</option><option>not on regular medication</option></select></label><label>History given by<select id="source"><option>Patient</option><option>Parent</option><option>Caregiver</option><option>Ambulance crew</option></select></label></div><h2 class="sub">Presenting complaints</h2><div id="pcs"></div><button id="addpc" class="secondary" type="button">Add another complaint</button></div><div class="card"><h2 id="details-title">History</h2><p class="hint">Tap what applies. Anything left untouched stays out of the note.</p><div class="fields" id="fields"></div><label style="margin-top:16px">Other relevant history<textarea id="extra" style="min-height:84px" placeholder="Anything else, in your own words"></textarea></label></div><div class="card"><h2 id="sec-symptoms">Associated symptoms</h2><p class="hint">+ = present. − = explicitly denied, recorded under Patient denies (or attributed to the history source). Symptoms left unselected are omitted from the note. Review every symptom before copying.</p><div class="symptoms" id="symptoms"></div></div><div class="card"><h2 id="sec-exam">Examination</h2><p class="hint">Tap what you found. Blanks stay out of the note, and nothing is recorded as normal unless you select it. Record consent and chaperone for intimate examinations.</p><div id="exam" class="fields"></div><label style="margin-top:16px">Other examination or repeat findings<textarea id="examother" style="min-height:84px"></textarea></label></div><div class="card"><h2 id="sec-plan">Plan</h2><label>Plan<textarea id="plan" style="min-height:100px"></textarea></label><label style="margin:16px 0"><input id="paeds" type="checkbox" style="width:auto"> Enable paediatric medication arithmetic for this encounter</label><div id="medpanel" hidden><p class="hint">Harriet Lane automatic formulary: pending verified edition and medicine list. The calculator below only multiplies a clinician-entered prescription; it does not select or validate a dose. Use mg/kg/dose, not mg/kg/day. Neonatal regimens and age, indication, route, renal and hepatic adjustments require separate verification.</p><div class="fields"><label>Measured weight (kg)<input type="number" min="0" step="any" id="weight"></label><label>Medicine<input id="medname"></label><label>Route<input id="route"></label><label>Frequency / duration<input id="frequency"></label><label>Verified prescription (mg/kg/dose)<input type="number" min="0" step="any" id="dose"></label><label>Verified maximum (mg per dose)<input type="number" min="0" step="any" id="maxdose"></label><label>Formulation: mg<input type="number" min="0" step="any" id="strengthmg"></label><label>Formulation: per mL<input type="number" min="0" step="any" id="strengthml"></label><label>Reference: edition / page / indication<input id="reference"></label></div><p id="doseout" class="hint" role="status"></p><button id="calc" class="secondary">Calculate entered prescription</button><label style="margin:12px 0"><input type="checkbox" id="verified" style="width:auto"> I checked age, indication, route, frequency, maximum, formulation and adjustments against the reference.</label><button id="addorder" class="secondary">Add checked order to plan</button><pre id="medlist" style="white-space:pre-wrap"></pre></div></div></section><section><div class="card output"><h2>Clinical note</h2><p class="hint">Builds itself as you enter findings. Edit it here before copying into Symone. This tool documents your entries; it does not assess severity or recommend treatment.</p><textarea id="output" aria-label="Clinical note" placeholder="Your note appears here as you fill in the left side. No normal findings or negatives are assumed."></textarea><div class="actions"><button id="copy">Copy to EHR</button><button class="secondary" id="generate">Update note</button></div><p id="status" class="hint" role="status">No direct connection to Symone. Copy and paste into the appropriate note field.</p><p class="private">Nothing you enter is saved or sent. It stays in this browser tab until you clear or close it.</p></div></section></div><p class="hint" id="version">Version 38 · 11 November 2026</p></main><nav class="quickbar" aria-label="Quick actions"><select id="jump" aria-label="Jump to section"></select><button id="quickgen" type="button">View note</button></nav><script>
 const common=[['Duration','Symptoms began'],['Progression','Course','select',['Sudden onset','Gradual onset','Improving','Worsening','Intermittent','Persistent']],['Treatment before arrival and response','Treatment before arrival']];
 const configs={
 'Asthma':{fields:[...common,['Possible trigger','Possible trigger'],['Reliever: doses and last use','Reliever use'],['Controller and adherence','Usual controller/adherence'],['Previous admissions / ICU / intubation','Previous asthma history'],['Baseline control / night waking','Baseline asthma control']],sym:['Breathlessness','Wheeze','Cough','Chest tightness','Fever','Sputum production','Pleuritic chest pain','Haemoptysis','Night waking']},
@@ -76,7 +178,7 @@ Object.assign(examination,{"Rash": ["Distribution / extent / symmetry", "Morphol
 Object.assign(examination,{"DKA": ["GCS / serial neurological findings", "Measured weight / dehydration / perfusion", "Glucose / blood ketones / measurement times", "Venous pH / bicarbonate", "Sodium / potassium / urea / creatinine", "Respiratory pattern / chest findings", "Heart rhythm / fluid overload signs", "Abdominal findings", "Infection source / feet / injection or pump site", "Child: neurological trend / headache / HR / breathing"], "SOB / Shortness of breath": ["Oxygen device / flow / room-air status", "Speech / mental state / work of breathing", "Airway sounds / trachea / chest symmetry", "Percussion / bilateral air entry / wheeze / crackles", "Heart sounds / rhythm / JVP / perfusion", "Oedema / calf asymmetry or tenderness", "Pallor / rash / angioedema", "PEF if assessed", "Child: recession / grunting / feeding / apnoea"]});
 let active='',drafts={},pcRows=[{complaint:'',duration:''}],medOrders=[];
 function field(id,label,options){const l=document.createElement('label');l.textContent=label;const e=document.createElement(options?'select':'input');e.id=id;if(options){e.add(new Option('Not entered',''));options.forEach(o=>e.add(new Option(o,o)))}l.append(e);return l}
-function renderPC(){const box=$('pcs');box.replaceChildren();pcRows.forEach((row,i)=>{const d=document.createElement('div');d.className='fields';const a=field('pc'+i,'Complaint '+(i+1)),b=field('dur'+i,'Duration (e.g. 6/24, 3/7, 2/52)');a.querySelector('input').value=row.complaint;b.querySelector('input').value=row.duration;d.append(a,b);const rem=document.createElement('button');rem.className='secondary';rem.textContent='Remove';rem.onclick=()=>{readPC();pcRows.splice(i,1);if(!pcRows.length)pcRows=[{complaint:'',duration:''}];renderPC()};d.append(rem);box.append(d)})}
+function renderPC(){const box=$('pcs');box.replaceChildren();pcRows.forEach((row,i)=>{const d=document.createElement('div');d.className='pc-row';const a=field('pc'+i,pcRows.length>1?'Complaint '+(i+1):'Complaint'),b=field('dur'+i,'Duration');b.querySelector('input').placeholder='6/24, 3/7, 2/52';a.querySelector('input').value=row.complaint;b.querySelector('input').value=row.duration;d.append(a,b);const rem=document.createElement('button');rem.type='button';rem.className='secondary remove';rem.textContent='×';rem.setAttribute('aria-label','Remove complaint '+(i+1));rem.hidden=pcRows.length===1;rem.onclick=()=>{readPC();pcRows.splice(i,1);if(!pcRows.length)pcRows=[{complaint:'',duration:''}];renderPC()};d.append(rem);box.append(d)})}
 function readPC(){pcRows=pcRows.map((r,i)=>({complaint:$('pc'+i).value.trim(),duration:$('dur'+i).value.trim()}))}
 // Quick controls keep one canonical value so generation, reset and presentation drafts agree.
 const quickChoices={
@@ -231,7 +333,7 @@ habitus.append(field('exam-habitus','Body habitus',['Average','Slim','Large','Mu
 $('exam').append(habitus);labels.forEach((n,i)=>{if(i===1){$('exam').append(examMeasurements('e'+i,n));return}if(i===0){$('exam').append(quickField('e'+i,n,['select',['Alert and comfortable','Alert but distressed','Drowsy','Confused','Unresponsive']]));return}if(i===2){$('exam').append(quickField('e'+i,n,['checks',['Moist mucosa','Dry mucosa','Warm peripheries','Cool peripheries','Capillary refill <2 seconds','Delayed capillary refill']]));return}if(active==='Sexual assault'&&!examinationChoices[n]){$('exam').append(field('e'+i,n));return}if(/Ulcer site \/ length|Foot classification|Calf circumference|DVT Wells|Groin relation|PEF|NIHSS|4AT|ECG rhythm|pH|bicarbonate|Sodium|potassium|Glucose|glucose|time \/ findings|assessment time|Lying \/ standing BP|Temperature \/ measurement|Fetal assessment|Measured weight|Child: weight|Child: neurological|GCS|Serial abdominal|Pregnancy \/ postpartum BP/.test(n)){$('exam').append(field('e'+i,n));return}$('exam').append(examQuickField('e'+i,n))})}
 function syncExam(){const labels=[...examCommon,...(examination[active]||[])];labels.forEach((n,i)=>{if(i===0)syncQuick('e'+i,['select',['Alert and comfortable','Alert but distressed','Drowsy','Confused','Unresponsive']]);if(i===2)syncQuick('e'+i,['checks',['Moist mucosa','Dry mucosa','Warm peripheries','Cool peripheries','Capillary refill <2 seconds','Delayed capillary refill']])})}
 
-function renderForm(){const c=configs[$('condition').value];$('details-title').textContent=$('condition').value+' / Bedside history';$('fields').replaceChildren();c.fields.forEach(([n,p,t,opts],i)=>$('fields').append(quickField('f'+i,n,quickSpec($('condition').value,i,t,opts))));renderSymptoms(c.sym);addHistoryShortcuts();renderExam();renderNormalExam();enhanceSystemExam();sectionExamination();if(bedsideGuidance[active]){const hint=document.createElement('p');hint.className='hint wide';hint.textContent=bedsideGuidance[active];$('exam').prepend(hint)}$('extra').value='';$('examother').value='';$('output').value=''}
+function renderForm(){const c=configs[$('condition').value];$('details-title').textContent=$('condition').value+' history';$('fields').replaceChildren();c.fields.forEach(([n,p,t,opts],i)=>$('fields').append(quickField('f'+i,n,quickSpec($('condition').value,i,t,opts))));renderSymptoms(c.sym);addHistoryShortcuts();renderExam();renderNormalExam();enhanceSystemExam();sectionExamination();streamline();if(bedsideGuidance[active]){const hint=document.createElement('p');hint.className='hint wide';hint.textContent=bedsideGuidance[active];$('exam').prepend(hint)}$('extra').value='';$('examother').value='';$('output').value=''}
 function formSnapshot(){const d={};document.querySelectorAll('#fields input,#fields select,#symptoms input,#symptoms select,#exam input,#exam select,#extra,#examother').forEach(e=>{if(e.id&&!/-q\d+$|-detail$|-choice$/.test(e.id))d[e.id]=e.type==='checkbox'?e.checked:e.value});return d}
 $('condition').onchange=()=>{if(keepManualEdits()){$('condition').value=active;return}noteEdited=false;if(active)drafts[active]=formSnapshot();active=$('condition').value;renderForm();Object.entries(drafts[active]||{}).forEach(([k,v])=>{if($(k)){if($(k).type==='checkbox')$(k).checked=v;else $(k).value=v}});configs[active].fields.forEach(([n,p,t,opts],i)=>{const spec=quickSpec(active,i,t,opts);if(spec)syncQuick('f'+i,spec)});syncExam();$('e1-v-flow').disabled=$('e1-v-oxygen').value==='Room air';refreshSymptoms();document.querySelectorAll('#fields select,#symptoms select').forEach(s=>s.syncButtons?.());$('status').textContent='Loaded '+active+' history and examination fields.'};
 // Deterministic wording only. No external service, diagnosis, or inferred clinical facts.
@@ -280,14 +382,16 @@ configs[name].fields.forEach(([label],i)=>{if(used.has(i)||!cleanClinical(values
 
 let noteStale=false;
 // Entries changed after generation make the note stale; copying is blocked until it is regenerated.
-function markStale(){if(!$('output').value.trim())return;noteStale=true;$('status').textContent='Entries changed after this note was generated. Generate again before copying.'}
+function markStale(){if(!$('output').value.trim())return;noteStale=true;$('status').textContent=noteEdited?'Entries changed after you edited this note. Update note rebuilds it from your entries.':'Updating note…'}
 function ageProblem(){const raw=$('age').value.trim();if(raw==='')return '';const n=Number(raw),limit={years:130,months:1560,weeks:6780,days:47500}[$('ageunit').value];if(!Number.isFinite(n)||n<0)return 'Enter a non-negative age.';if(n>limit)return 'Please check the entered age and unit.';return ''}
 let noteEdited=false,encounterDirty=false;
 // Vital signs outside the limits set on each field are refused, never written into the note.
-function vitalsProblem(){for(const e of document.querySelectorAll('input[type=number][id*="-v-"]')){const raw=e.value.trim();if(raw==='')continue;const n=Number(raw),name=e.parentElement.firstChild.textContent;if(!Number.isFinite(n)||n<Number(e.min)||n>Number(e.max)){e.closest('details')?.setAttribute('open','');e.focus();return 'Check '+name+': '+raw+' is outside '+e.min+'–'+e.max+'.'}}return ''}
+function vitalsProblem(focus){for(const e of document.querySelectorAll('input[type=number][id*="-v-"]')){const raw=e.value.trim();if(raw==='')continue;const n=Number(raw),name=e.parentElement.firstChild.textContent;if(!Number.isFinite(n)||n<Number(e.min)||n>Number(e.max)){if(focus){e.closest('details')?.setAttribute('open','');e.focus()}return 'Check '+name+': '+raw+' is outside '+e.min+'–'+e.max+'.'}}return ''}
 function keepManualEdits(){return noteEdited&&$('output').value.trim()&&!confirm('This replaces the edits you typed into the note. Continue?')}
-function generate(){if(keepManualEdits())return;const vitalsIssue=vitalsProblem();if(vitalsIssue){$('status').textContent=vitalsIssue;return}noteEdited=false;const missingConsent=[...document.querySelectorAll('#normal-exam input[data-finding]:checked')].find(e=>intimateNormalSystems.includes(e.dataset.system)&&!$('nx-consent-'+e.dataset.group).checked);const missingExtraConsent=[...document.querySelectorAll('#normal-exam input[data-extra-system]')].find(e=>e.value.trim()&&intimateNormalSystems.includes(e.dataset.extraSystem)&&!$('nx-consent-'+e.dataset.group).checked);if(missingExtraConsent){$('output').value='';$('status').textContent='Record specific consent before including '+missingExtraConsent.dataset.extraSystem+' findings.';return}if(missingConsent){$('output').value='';$('status').textContent='Record specific consent before including '+missingConsent.dataset.system+' findings.';return}if(active==='Sexual assault'&&['e8','e9','e10'].some(id=>$(id).value.trim())&&$('f4').value!=='Consented'){$('output').value='';$('status').textContent='Before documenting intimate findings, select Consented under Intimate examination consent and record the agreed scope. Remove intimate findings if that examination was declined or deferred.';return}const ageIssue=ageProblem();if(ageIssue){$('output').value='';$('status').textContent=ageIssue;return}readPC();const c=configs[active],lines=[];const enteredPCs=pcRows.filter(r=>r.complaint),pcs=enteredPCs.map(r=>r.complaint+(r.duration?' x'+r.duration:''));lines.push(...openingHistory(enteredPCs));const values=c.fields.map((f,i)=>$('f'+i).value);try{lines.push(...fluentHistory(active,values,enteredPCs.some(r=>r.duration)))}catch(e){$('status').textContent=e.message;return}if($('extra').value.trim())lines.push(sentenceClinical($('extra').value));const groups={Present:[],Absent:[],Declined:[],Uncertain:[]};c.sym.forEach((n,i)=>{const group={present:'Present',absent:'Absent',declined:'Declined',uncertain:'Uncertain'}[$('s'+i).value];if(group)groups[group].push(lowerClinicalStart(n))});if(groups.Declined.length)lines.push(sentenceClinical('The patient declined to discuss '+joinClinical(groups.Declined)));if(groups.Uncertain.length)lines.push(sentenceClinical('The history is uncertain regarding '+joinClinical(groups.Uncertain)));if(groups.Present.length)lines.push(sentenceClinical(($('source').value==='Patient'?'The patient reports ':'The '+$('source').value.toLowerCase()+' reports ')+joinClinical(groups.Present)));if(groups.Absent.length)lines.push(sentenceClinical(($('source').value==='Patient'?'Patient denies: ':$('source').value+' reports no: ')+joinClinical(groups.Absent)));if(lines.length)lines.push('The patient attends the ED for further assessment and management.');const exams=selectedNormalExam();if($('examother').value.trim())exams.push($('examother').value.trim());const parts=[];if(pcs.length)parts.push('PC:\n'+pcs.join('\n'));if(lines.length)parts.push('HPC:\n'+lines.join(' '));if(exams.length)parts.push('EXAMINATION:\n'+exams.join('\n\n'));const plan=$('plan').value.trim();if(plan||medOrders.length)parts.push('PLAN:\n'+[plan,...medOrders].filter(Boolean).join('\n'));$('output').value=parts.join('\n\n');noteStale=false;$('status').textContent='Draft generated. Review findings, wording and orders before signing.'}
-$('generate').onclick=generate;$('copy').onclick=async()=>{if(!$('output').value.trim())return;if(noteStale){$('status').textContent='Entries changed after this note was generated. Generate again before copying.';return}try{await navigator.clipboard.writeText($('output').value);$('status').textContent='Copied. Paste into Symone and review.'}catch(e){$('output').focus();$('output').select();$('status').textContent='Copy the selected text manually.'}};
+function generate(auto){if(auto!==true&&keepManualEdits())return;const vitalsIssue=vitalsProblem(auto!==true);if(vitalsIssue){$('status').textContent=vitalsIssue;return}noteEdited=false;const missingConsent=[...document.querySelectorAll('#normal-exam input[data-finding]:checked')].find(e=>intimateNormalSystems.includes(e.dataset.system)&&!$('nx-consent-'+e.dataset.group).checked);const missingExtraConsent=[...document.querySelectorAll('#normal-exam input[data-extra-system]')].find(e=>e.value.trim()&&intimateNormalSystems.includes(e.dataset.extraSystem)&&!$('nx-consent-'+e.dataset.group).checked);if(missingExtraConsent){$('output').value='';$('status').textContent='Record specific consent before including '+missingExtraConsent.dataset.extraSystem+' findings.';return}if(missingConsent){$('output').value='';$('status').textContent='Record specific consent before including '+missingConsent.dataset.system+' findings.';return}if(active==='Sexual assault'&&['e8','e9','e10'].some(id=>$(id).value.trim())&&$('f4').value!=='Consented'){$('output').value='';$('status').textContent='Before documenting intimate findings, select Consented under Intimate examination consent and record the agreed scope. Remove intimate findings if that examination was declined or deferred.';return}const ageIssue=ageProblem();if(ageIssue){$('output').value='';$('status').textContent=ageIssue;return}readPC();const c=configs[active],lines=[];const enteredPCs=pcRows.filter(r=>r.complaint),pcs=enteredPCs.map(r=>r.complaint+(r.duration?' x'+r.duration:''));lines.push(...openingHistory(enteredPCs));const values=c.fields.map((f,i)=>$('f'+i).value);try{lines.push(...fluentHistory(active,values,enteredPCs.some(r=>r.duration)))}catch(e){$('status').textContent=e.message;return}if($('extra').value.trim())lines.push(sentenceClinical($('extra').value));const groups={Present:[],Absent:[],Declined:[],Uncertain:[]};c.sym.forEach((n,i)=>{const group={present:'Present',absent:'Absent',declined:'Declined',uncertain:'Uncertain'}[$('s'+i).value];if(group)groups[group].push(lowerClinicalStart(n))});if(groups.Declined.length)lines.push(sentenceClinical('The patient declined to discuss '+joinClinical(groups.Declined)));if(groups.Uncertain.length)lines.push(sentenceClinical('The history is uncertain regarding '+joinClinical(groups.Uncertain)));if(groups.Present.length)lines.push(sentenceClinical(($('source').value==='Patient'?'The patient reports ':'The '+$('source').value.toLowerCase()+' reports ')+joinClinical(groups.Present)));if(groups.Absent.length)lines.push(sentenceClinical(($('source').value==='Patient'?'Patient denies: ':$('source').value+' reports no: ')+joinClinical(groups.Absent)));if(lines.length)lines.push('The patient attends the ED for further assessment and management.');const exams=selectedNormalExam();if($('examother').value.trim())exams.push($('examother').value.trim());const parts=[];if(pcs.length)parts.push('PC:\n'+pcs.join('\n'));if(lines.length)parts.push('HPC:\n'+lines.join(' '));if(exams.length)parts.push('EXAMINATION:\n'+exams.join('\n\n'));const plan=$('plan').value.trim();if(plan||medOrders.length)parts.push('PLAN:\n'+[plan,...medOrders].filter(Boolean).join('\n'));$('output').value=parts.join('\n\n');noteStale=false;$('status').textContent=parts.length?'Note up to date. Review findings, wording and orders before signing.':'Nothing entered yet.'}
+// The note rebuilds itself after each entry. Hand edits pause this so they are never overwritten silently.
+function liveUpdate(){if(noteEdited||!encounterDirty)return;generate(true);if(!/^(Note up to date|Nothing entered)/.test($('status').textContent)&&$('output').value.trim())noteStale=true}
+$('generate').onclick=generate;$('copy').onclick=async()=>{if(noteStale&&!noteEdited)liveUpdate();if(!$('output').value.trim())return;if(noteStale){if(noteEdited)$('status').textContent='Entries changed after you edited this note. Update note rebuilds it from your entries; then copy.';return}try{await navigator.clipboard.writeText($('output').value);$('status').textContent='Copied. Paste into Symone and review.'}catch(e){$('output').focus();$('output').select();$('status').textContent='Copy the selected text manually.'}};
 $('addpc').onclick=()=>{readPC();pcRows.push({complaint:'',duration:''});renderPC()};
 $('reset').onclick=()=>{if(!confirm('Clear this encounter, all presentation drafts and medication orders?'))return;drafts={};pcRows=[{complaint:'',duration:''}];medOrders=[];document.querySelectorAll('#intro input,#intro select,#plan,#weight,#medname,#route,#dose,#maxdose,#strengthmg,#strengthml,#frequency,#reference').forEach(e=>e.value='');$('ageunit').value='years';$('source').value='Patient';$('medlist').textContent='';$('doseout').textContent='';$('paeds').checked=false;$('verified').checked=false;$('medpanel').hidden=true;noteStale=false;noteEdited=false;encounterDirty=false;renderPC();renderForm();$('status').textContent='Encounter cleared.'};
 $('paeds').onchange=()=>{$('medpanel').hidden=!$('paeds').checked};
@@ -348,7 +452,7 @@ function refreshSymptoms(){
 }
 function renderSymptoms(names){
   const panel=$('symptoms');panel.replaceChildren();
-  panel.previousElementSibling.textContent='Tap + for present or − for denied. Tap again to clear. Unanswered symptoms are omitted.';
+  panel.previousElementSibling.textContent='Tap + if present, − if denied. Tap again to clear. Untouched symptoms stay out of the note.';
   const sensitive=['Sexual assault','Physical assault'].includes(active);
   names.forEach((name,i)=>{
     const row=document.createElement('div');row.className='rapid-row';
@@ -369,7 +473,7 @@ function renderSymptoms(names){
   });
   if(!sensitive){
     const denied=document.createElement('button');denied.type='button';denied.className='secondary wide';
-    denied.textContent='Mark all remaining symptoms as asked and denied';
+    denied.textContent='Mark the rest as asked and denied';
     denied.onclick=()=>{const blank=[...panel.querySelectorAll('.rapid-row input')].filter(field=>!field.value);if(!blank.length)return;if(!confirm('Record '+blank.length+' remaining symptom'+(blank.length===1?'':'s')+' as asked and denied? Confirm only if each one was asked.'))return;for(const field of blank)field.value='absent';refreshSymptoms();markStale()};
     panel.append(denied);
   }
@@ -379,7 +483,7 @@ const normalExamSystems={"General": ["Patient in no distress", "Mucous membranes
 const normalExamMap={"Asthma": ["Respiratory"], "Chest pain": ["Cardiovascular", "Respiratory", "Legs / skin"], "Syncope": ["Cardiovascular", "Neurological"], "Suspected stroke": ["Neurological", "Cardiovascular"], "Fall from height": ["Respiratory", "Cardiovascular", "Abdomen", "Neurological", "Musculoskeletal", "Distal neurovascular"], "Motor vehicle / motorbike collision": ["Respiratory", "Cardiovascular", "Abdomen", "Neurological", "Musculoskeletal", "Distal neurovascular"], "Fracture": ["Musculoskeletal", "Distal neurovascular"], "Headache": ["Neurological", "ENT"], "PV Bleeding": ["Abdomen", "External female genital", "Speculum", "Bimanual pelvic"], "PR Bleeding": ["Abdomen"], "Haematuria": ["Abdomen", "Male genitourinary"], "Cough / Cold / Flu": ["Respiratory", "ENT"], "PV Discharge": ["Abdomen", "External female genital", "Speculum", "Bimanual pelvic"], "Penile Discharge": ["Male genitourinary", "Legs / skin"], "Leg swelling": ["Legs / skin", "Cardiovascular", "Respiratory", "Abdomen", "Distal neurovascular"], "Acute abdomen — atraumatic": ["Abdomen", "Groins", "Cardiovascular", "Respiratory"], "Acute abdomen — traumatic": ["Abdomen", "Respiratory", "Cardiovascular", "Musculoskeletal", "Distal neurovascular"], "Upper GI bleed": ["Abdomen", "Cardiovascular"], "Vomiting & diarrhoea": ["Abdomen", "Neurological"], "Decreased responsiveness — elderly": ["Neurological", "Respiratory", "Cardiovascular", "Abdomen", "Legs / skin"], "Seizure": ["Neurological", "Cardiovascular", "Respiratory", "Musculoskeletal"], "Fever": ["ENT", "Respiratory", "Cardiovascular", "Abdomen", "Neurological", "Legs / skin"], "Rash": ["Legs / skin"], "Constipation": ["Abdomen", "Neurological"], "Toxic ingestion": ["Neurological", "Respiratory", "Cardiovascular", "Abdomen"], "Behavioural change": ["Mental status", "Neurological"], "DKA": ["Neurological", "Respiratory", "Cardiovascular", "Abdomen", "Foot"], "SOB / Shortness of breath": ["Respiratory", "Cardiovascular", "Legs / skin"], "Diabetic foot": ["Foot", "Distal neurovascular"], "Hernia": ["Abdomen", "Groins"], "Suspected DVT": ["Legs / skin", "Distal neurovascular", "Respiratory", "Cardiovascular"], "Sexual assault": ["Neurological", "Respiratory", "Cardiovascular", "Abdomen", "Musculoskeletal"]};
 const intimateNormalSystems=['Male genitourinary','External female genital','Speculum','Bimanual pelvic'];
 const otherExamSystems={"General": ["Distressed", "Pale mucous membranes", "Dry mucous membranes", "Jaundice", "Central cyanosis", "Diaphoretic", "Drowsy", "Agitated"], "Respiratory": ["Tracheal deviation", "Asymmetrical chest expansion", "Reduced air entry — right", "Reduced air entry — left", "Reduced bilateral air entry", "Wheeze", "Crackles", "Stridor", "Dull percussion", "Hyperresonant percussion", "Accessory muscle use", "Intercostal recession", "Silent chest"], "Cardiovascular": ["Irregular pulse", "Low-volume pulse", "Tachycardia", "Bradycardia", "Murmur", "Added heart sound", "Elevated JVP", "Peripheral pulse deficit", "Delayed capillary refill", "Cool peripheries"], "Abdomen": ["Distension", "Tenderness", "Guarding", "Rigidity", "Rebound tenderness", "Palpable mass", "Hepatomegaly", "Splenomegaly", "Ascites", "Absent bowel sounds", "High-pitched bowel sounds", "Renal angle tenderness", "Suprapubic fullness"], "Neurological": ["Disorientated", "Dysarthria", "Aphasia", "Facial asymmetry", "Unequal pupils", "Abnormal pupillary reaction", "Limb weakness", "Sensory deficit", "Abnormal tone", "Abnormal reflexes", "Ataxia", "Abnormal gait", "Neck stiffness", "Neglect", "Seizure activity observed"], "Musculoskeletal": ["Swelling", "Bruising", "Erythema", "Deformity", "Tenderness", "Crepitus", "Restricted range of motion", "Joint instability", "Muscle wasting", "Joint effusion", "Open wound", "Exposed bone"], "Distal neurovascular": ["Reduced distal pulse", "Absent distal pulse", "Delayed distal capillary refill", "Cool distal limb", "Distal sensory deficit", "Distal motor deficit", "Tense compartments", "Pain on passive stretch"], "Mental status": ["Dishevelled appearance", "Uncooperative during assessment", "Psychomotor agitation", "Psychomotor slowing", "Pressured speech", "Reduced speech", "Incoherent speech", "Low mood reported", "Elevated mood reported", "Labile affect", "Flat affect", "Disorganised thought form", "Delusional content elicited", "Hallucinations reported", "Suicidal ideation elicited", "Homicidal ideation elicited", "Impaired attention", "Impaired recent memory", "Impaired insight", "Impaired judgement"], "Male genitourinary": ["Penile lesion", "Urethral discharge", "Scrotal erythema", "Scrotal swelling", "Testicular tenderness", "Testicular mass", "Epididymal tenderness", "Abnormal testicular lie"], "External female genital": ["External erythema", "External lesion", "External discharge", "External swelling", "External bleeding", "External tenderness"], "Speculum": ["Blood in vaginal vault", "Vaginal discharge", "Cervical discharge", "Cervical lesion", "Cervical bleeding", "Open cervical os", "Visible tissue"], "Bimanual pelvic": ["Uterine enlargement", "Uterine tenderness", "Cervical motion tenderness", "Adnexal tenderness", "Adnexal mass"], "Legs / skin": ["Pitting oedema", "Non-pitting oedema", "Calf asymmetry", "Calf tenderness", "Erythema", "Warmth", "Wound", "Ulcer", "Rash", "Petechiae", "Purpura", "Blistering", "Skin necrosis"], "ENT": ["Pharyngeal erythema", "Tonsillar enlargement", "Tonsillar exudate", "Uvula deviation", "Trismus", "Cervical lymphadenopathy", "Bulging tympanic membrane", "Ear discharge", "Sinus tenderness"], "Groins": ["Groin swelling", "Groin tenderness", "Reducible lump", "Irreducible lump", "Overlying erythema", "Overlying skin discolouration"], "Foot": ["Ulcer", "Callus", "Erythema", "Warmth", "Swelling", "Purulent discharge", "Malodour", "Necrosis", "Gangrene", "Crepitus", "Foot deformity", "Reduced dorsalis pedis pulse", "Absent dorsalis pedis pulse", "Reduced posterior tibial pulse", "Absent posterior tibial pulse", "Reduced protective sensation"]};
-function renderNormalExam(){const panel=document.createElement('div');panel.className='wide';panel.id='normal-exam';const h=document.createElement('h2');h.textContent='Examination presets — select assessed findings';panel.append(h);const hint=document.createElement('p');hint.className='hint';hint.textContent='Selected findings form a paragraph under each system heading. Leave unexamined items blank. Select normal or abnormal findings, then add side, site, severity, measurements and limitations. Do not select a normal finding that conflicts with an abnormal finding. Normal genital findings do not exclude sexual assault.';panel.append(hint);['General',...(normalExamMap[active]||[])].forEach((system,k)=>{const details=document.createElement('details');details.open=k<2;details.className='exam-quick';const title=document.createElement('summary');title.textContent=system;details.append(title);if(intimateNormalSystems.includes(system)){const l=document.createElement('label');l.className='symptom-check';const consent=document.createElement('input');consent.type='checkbox';consent.id='nx-consent-'+k;l.append(consent,document.createTextNode('Consent obtained for this specific component; document scope and chaperone below'));details.append(l)}const opts=document.createElement('div');opts.className='quick-options';[...normalExamSystems[system],...otherExamSystems[system]].forEach((finding,j)=>{const l=document.createElement('label'),e=document.createElement('input');e.type='checkbox';e.id='nx-'+k+'-'+j;e.dataset.finding=finding;e.dataset.system=system;e.dataset.group=k;if(j>=normalExamSystems[system].length)l.style.background='#fff1e9';e.setAttribute('aria-label',system+' — '+finding);l.append(e,document.createTextNode(finding));opts.append(l)});details.append(opts);const extra=field('nx-extra-'+k,system+' — other findings / side / site / severity / measurements');extra.lastElementChild.dataset.extraSystem=system;extra.lastElementChild.dataset.group=k;details.append(extra);panel.append(details)});$('exam').prepend(panel)}
+function renderNormalExam(){const panel=document.createElement('div');panel.className='wide';panel.id='normal-exam';const h=document.createElement('h2');h.textContent='Examination presets — select assessed findings';panel.append(h);const hint=document.createElement('p');hint.className='hint';hint.textContent='Each system becomes a paragraph. Add side, site, severity and measurements in the text boxes. Avoid selecting a normal finding that conflicts with an abnormal one. Normal genital findings do not exclude sexual assault.';panel.append(hint);['General',...(normalExamMap[active]||[])].forEach((system,k)=>{const details=document.createElement('details');details.open=k<2;details.className='exam-quick';const title=document.createElement('summary');title.textContent=system;details.append(title);if(intimateNormalSystems.includes(system)){const l=document.createElement('label');l.className='symptom-check';const consent=document.createElement('input');consent.type='checkbox';consent.id='nx-consent-'+k;l.append(consent,document.createTextNode('Consent obtained for this specific component; document scope and chaperone below'));details.append(l)}const opts=document.createElement('div');opts.className='quick-options';[...normalExamSystems[system],...otherExamSystems[system]].forEach((finding,j)=>{const l=document.createElement('label'),e=document.createElement('input');e.type='checkbox';e.id='nx-'+k+'-'+j;e.dataset.finding=finding;e.dataset.system=system;e.dataset.group=k;if(j>=normalExamSystems[system].length)l.classList.add('abnormal');e.setAttribute('aria-label',system+' — '+finding);l.append(e,document.createTextNode(finding));opts.append(l)});details.append(opts);const extra=field('nx-extra-'+k,system+' — other findings / side / site / severity / measurements');extra.lastElementChild.dataset.extraSystem=system;extra.lastElementChild.dataset.group=k;details.append(extra);panel.append(details)});$('exam').prepend(panel)}
 function examinationParagraph(findings) {
   const remaining = [...new Set(findings.map(cleanClinical).filter(Boolean))];
   const combinations = [
@@ -528,33 +632,77 @@ addBedsideChecklist('Acute confusional state', [
 }, ['Neurological','Mental status','Respiratory','Abdomen'], 'Assess ABCs, oxygenation, glucose and focal neurological signs promptly. Establish baseline and timing with collateral. Document the informant and use 4AT where appropriate. Record only explicitly reported negatives when history is limited.');
 
 // Keep native selects as the source of truth for draft restoration and note generation.
+let chipGroups=[];
+// A dropdown with a short list becomes a row of chips: one tap to choose, tap again to clear.
+// The dropdown stays in the page as the stored value, so note generation is unchanged.
+function chipify(select, labels, only) {
+  if (!select || select.classList.contains('chipped')) return null;
+  const options = [...select.options].filter(o => o.value && (!only || only.includes(o.value)));
+  if (!options.length || options.length > 13) return null;
+  const canClear = [...select.options].some(o => o.value === '');
+  const group = document.createElement('div');
+  group.className = 'quick-options shortcuts';
+  if (options.every(o => /^\d+$/.test(o.value) || o.value === 'Other / specify')) group.classList.add('scale');
+  group.setAttribute('role', 'group');
+  group.setAttribute('aria-label', select.getAttribute('aria-label') || select.parentElement.firstChild.textContent || 'Choices');
+  const buttons = [];
+  for (const option of options) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = (labels && labels[option.value]) || (option.value === 'Other / specify' ? 'Other' : option.text);
+    if (option.value === 'Other / specify') b.classList.add('more');
+    b.onclick = () => {
+      select.value = select.value === option.value && canClear ? '' : option.value;
+      select.dispatchEvent(new Event('change', {bubbles:true}));
+    };
+    buttons.push([b, option.value]);
+    group.append(b);
+  }
+  select.before(group);
+  select.classList.add('chipped');
+  select.syncButtons = refreshUI;
+  chipGroups.push({select, buttons});
+  return group;
+}
 function addHistoryShortcuts() {
-  document.querySelectorAll('#fields select').forEach(select => {
-
-    const options = [...select.options].filter(o => o.value && o.value !== 'Other / specify');
-    if (options.length > 6) return;
-    const group = document.createElement('div');
-    group.className = 'quick-options shortcuts';
-    group.setAttribute('role', 'group');
-    group.setAttribute('aria-label', select.getAttribute('aria-label') || 'History choices');
-    const buttons = [];
-    for (const option of options) {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.textContent = option.text;
-      b.onclick = () => {
-        select.value = select.value === option.value ? '' : option.value;
-        select.dispatchEvent(new Event('change', {bubbles:true}));
-      };
-      buttons.push([b, option.value]);
-      group.append(b);
-    }
-    const sync = () => buttons.forEach(([b,v]) => b.setAttribute('aria-pressed', String(select.value === v)));
-    select.addEventListener('change', sync);
-    select.syncButtons = sync;
-    sync();
-    select.before(group);
+  document.querySelectorAll('#fields select').forEach(select => chipify(select));
+}
+// Runs after each form render: swaps remaining dropdowns for chips and tucks optional detail boxes away.
+function streamline() {
+  chipify($('exam-habitus'));
+  document.querySelectorAll('#normal-exam .quick-field > select').forEach(select => chipify(select));
+  document.querySelectorAll('#normal-exam select[id$="-state"]').forEach(select => {
+    const box = select.parentElement, title = box.querySelector(':scope > label');
+    const group = chipify(select, {normal:'Normal', deferred:'Deferred', declined:'Declined'}, ['normal','deferred','declined']);
+    if (!group || !title) return;
+    const head = document.createElement('div'); head.className = 'exam-head';
+    title.before(head); head.append(title, group);
   });
+  document.querySelectorAll('#fields .quick-field, #normal-exam div.exam-quick, #normal-exam .quick-field').forEach(box => {
+    const options = box.querySelector(':scope > .quick-options:not(.shortcuts)');
+    const input = box.querySelector(':scope > input[id$="-detail"], :scope > input[id$="-notes"]');
+    if (!options || !input || input.classList.contains('tuck')) return;
+    input.classList.add('tuck'); input.hidden = !input.value;
+    const more = document.createElement('button'); more.type = 'button'; more.className = 'more'; more.textContent = 'Add detail';
+    more.hidden = !input.hidden;
+    more.onclick = () => { input.hidden = false; more.hidden = true; input.focus(); };
+    input.tuckButton = more; options.append(more);
+  });
+  refreshUI();
+}
+// Keeps chips, symptom rows and section counts in step with the stored values.
+function refreshUI() {
+  chipGroups = chipGroups.filter(g => g.select.isConnected);
+  for (const {select, buttons} of chipGroups) for (const [b, v] of buttons) b.setAttribute('aria-pressed', String(select.value === v));
+  for (const row of document.querySelectorAll('#symptoms .rapid-row')) row.dataset.state = row.querySelector('input').value;
+  for (const input of document.querySelectorAll('input.tuck')) if (input.value && input.hidden) { input.hidden = false; input.tuckButton.hidden = true; }
+  for (const details of document.querySelectorAll('#normal-exam > details')) {
+    const ticked = details.querySelectorAll('input[type=checkbox]:checked:not([id^="nx-consent-"])').length;
+    const typed = [...details.querySelectorAll('input:not([type=hidden]):not([type=checkbox])')].filter(e => e.value.trim()).length;
+    const states = [...details.querySelectorAll('select')].filter(e => e.value).length;
+    const n = ticked + typed + states, summary = details.querySelector('summary');
+    if (n) summary.dataset.count = n + ' recorded'; else delete summary.dataset.count;
+  }
 }
 
 const additionalFindings = {
@@ -827,23 +975,27 @@ function sectionExamination(){
     // Measurements and quick fields have a hidden canonical input directly inside their card.
     getSection(examinationSystem(i)).append(control.parentElement);
   });
-  panel.querySelector('h2').textContent=active+' — examination by system';
+  const sysHead=panel.querySelector('h2');sysHead.textContent='Findings by system';sysHead.className='sub';
 }
 
 Object.keys(configs).sort((a,b)=>a.localeCompare(b,'en',{sensitivity:'base'})).forEach(k=>$('condition').add(new Option(k,k)));active=$('condition').value;renderForm();renderPC();
 
 (()=>{const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches,glide=reduceMotion?'auto':'smooth';const entry=document.querySelector('.layout > section');entry.addEventListener('input',markStale);entry.addEventListener('change',markStale);entry.addEventListener('click',e=>{if(e.target.closest('button'))markStale()});
-$('output').addEventListener('input',()=>{noteEdited=true});
+$('output').addEventListener('input',()=>{noteEdited=true;$('status').textContent='You edited the note, so automatic updates are paused. Update note rebuilds it from your entries.'});
+let liveTimer=0,uiTick=false;const schedule=()=>{clearTimeout(liveTimer);liveTimer=setTimeout(liveUpdate,300)};
+entry.addEventListener('input',schedule);entry.addEventListener('change',schedule);entry.addEventListener('click',e=>{if(e.target.closest('button'))schedule()});$('condition').addEventListener('change',schedule);
+for(const type of ['input','change','click'])document.addEventListener(type,()=>{if(!uiTick){uiTick=true;requestAnimationFrame(()=>{uiTick=false;refreshUI()})}});
+chipify($('sex'));chipify($('ageunit'));chipify($('source'));chipify($('compliance'),{'compliant with medications':'Compliant','not compliant with medications':'Not compliant','partially compliant with medications':'Partly compliant','compliance uncertain':'Uncertain','not on regular medication':'No regular medication'});refreshUI();
 document.querySelector('main').addEventListener('input',()=>{encounterDirty=true});document.querySelector('main').addEventListener('change',e=>{if(e.target.id!=='condition')encounterDirty=true});
 window.addEventListener('beforeunload',e=>{if(encounterDirty){e.preventDefault();e.returnValue=''}});
 const jump=$('jump');const fillJump=()=>{const heads=[...document.querySelectorAll('main h2')];jump.replaceChildren(new Option('Jump to section…',''));heads.forEach((h,i)=>jump.add(new Option(h.textContent,String(i))))};
 jump.addEventListener('pointerdown',fillJump);jump.addEventListener('focus',fillJump);jump.onchange=()=>{const h=document.querySelectorAll('main h2')[Number(jump.value)];if(jump.value!==''&&h)h.scrollIntoView({behavior:glide,block:'start'});jump.value=''};fillJump();
-$('quickgen').onclick=()=>{generate();document.querySelector('.output').scrollIntoView({behavior:glide,block:'start'})};
+$('quickgen').onclick=()=>{clearTimeout(liveTimer);liveUpdate();document.querySelector('.output').scrollIntoView({behavior:glide,block:'start'})};
 // Section pills, scroll position bar and card reveal. Purely presentational.
-const sections=[['History',/^01 \//],['Details',/Bedside history$/],['Context',/^02 \//],['Symptoms',/^03 \//],['Examination',/^04 \//],['Plan',/^05 \//]];
-const headFor=re=>[...document.querySelectorAll('main h2')].find(h=>re.test(h.textContent));
+const sections=[['Patient','sec-patient'],['History','details-title'],['Symptoms','sec-symptoms'],['Examination','sec-exam'],['Plan','sec-plan']];
+const headFor=id=>$(id);
 sections.forEach(([name,re])=>{const b=document.createElement('button');b.type='button';b.textContent=name;b.onclick=()=>{const h=headFor(re);if(h)h.scrollIntoView({behavior:glide,block:'start'})};$('secnav').append(b)});
-let ticking=false;const onScroll=()=>{ticking=false;const doc=document.documentElement,max=doc.scrollHeight-innerHeight;$('progress').style.transform='scaleX('+(max>0?Math.min(1,scrollY/max):0)+')';const bar=document.querySelector('.bar'),barH=bar.getBoundingClientRect().height;doc.style.setProperty('--barh',Math.round(barH)+'px');bar.classList.toggle('stuck',bar.getBoundingClientRect().top<=0&&scrollY>0);let current=0;sections.forEach(([,re],i)=>{const h=headFor(re);if(h&&h.getBoundingClientRect().top<=barH+60)current=i});if(max>0&&scrollY>=max-2)current=sections.length-1;[...$('secnav').children].forEach((b,i)=>b.setAttribute('aria-current',String(i===current)))};
+let ticking=false;const onScroll=()=>{ticking=false;const doc=document.documentElement,max=doc.scrollHeight-innerHeight;$('progress').style.transform='scaleX('+(max>0?Math.min(1,scrollY/max):0)+')';const bar=document.querySelector('.appbar'),barH=bar.getBoundingClientRect().height;doc.style.setProperty('--barh',Math.round(barH)+'px');bar.classList.toggle('stuck',bar.getBoundingClientRect().top<=0&&scrollY>0);let current=0;sections.forEach(([,re],i)=>{const h=headFor(re);if(h&&h.getBoundingClientRect().top<=barH+60)current=i});if(max>0&&scrollY>=max-2)current=sections.length-1;[...$('secnav').children].forEach((b,i)=>b.setAttribute('aria-current',String(i===current)))};
 addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(onScroll)}},{passive:true});addEventListener('resize',onScroll);onScroll();
 if(!reduceMotion&&'IntersectionObserver' in window){const io=new IntersectionObserver(items=>items.forEach(it=>{if(it.isIntersecting){const c=it.target;io.unobserve(c);c.classList.add('in');c.addEventListener('transitionend',()=>c.classList.remove('reveal','in'),{once:true});setTimeout(()=>c.classList.remove('reveal','in'),900)}}),{rootMargin:'0px 0px -6% 0px'});document.querySelectorAll('.layout > section:first-child > .card').forEach(c=>{if(c.getBoundingClientRect().top>innerHeight){c.classList.add('reveal');io.observe(c)}})}
 })();

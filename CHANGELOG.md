@@ -1,5 +1,16 @@
 # Changelog
 
+## Version 38 — 11 November 2026
+Interface redesign aimed at fewer taps and less on-screen clutter. No change to clinical content, note wording or safeguards.
+- The note builds itself as you enter findings; there is no Generate step. Typing in the note pauses automatic updates so edits are never overwritten without asking. "Update note" rebuilds it.
+- Dropdowns with short lists are now one-tap chips (sex, age unit, history source, compliance, progression, site, character, severity 0–10, body habitus, general appearance). The duplicate dropdown under each chip row is gone.
+- Each examination item has Normal / Deferred / Declined chips in place of a six-option dropdown.
+- Optional "specify" boxes are tucked behind an "Add detail" chip until needed.
+- One slim bar holds the presentation, section links and Clear encounter. The large banner is removed.
+- Sections renamed in plain words (Patient, History, Symptoms, Examination, Plan); "Other relevant history" now sits inside History.
+- Symptoms show present in teal and denied in slate; each examination system shows how many items are recorded.
+- Instructions shortened to one line per section.
+
 ## Version 37 — 11 November 2026
 - New presentations: Anaphylaxis, Itching, and Pain and aches, each with bedside history, symptoms, examination by system and a bedside reminder. 42 presentations in total.
 - Interface: smooth scrolling; on desktop the presentation bar stays at the top with section pills (History, Details, Context, Symptoms, Examination, Plan) that highlight the current section; a thin bar at the top of the screen shows position in the form; cards fade in as they come into view; softer card shadows and hover, press and focus feedback on buttons and fields.
