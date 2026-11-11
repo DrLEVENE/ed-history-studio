@@ -1,4 +1,4 @@
-# ED History Studio — version 35
+# ED History Studio — version 36
 
 Open dist/index.html directly in a browser. The active HTML, CSS and JavaScript are in this single file. The other dist files are older assets. No build or dependency installation is required.
 
