@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 39 — 12 November 2026
+- New presentations: Unwitnessed fall and Surgical site infection, each with bedside history, symptoms, examination by system and a bedside reminder. 44 presentations in total.
+- Anaphylaxis: "Conscious level" now offers its tick options (Alert, Confused, Drowsy, Unresponsive); it was showing as a plain text box.
+- Examination section counts no longer count a ticked finding twice.
+
 ## Version 38 — 11 November 2026
 Interface redesign aimed at fewer taps and less on-screen clutter. No change to clinical content, note wording or safeguards.
 - The note builds itself as you enter findings; there is no Generate step. Typing in the note pauses automatic updates so edits are never overwritten without asking. "Update note" rebuilds it.
