@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 40 — 12 November 2026
+- Every typed history box shows, in grey, the sentence it becomes in the note ("Note reads: The patient was found …"), so answers can be phrased to fit.
+- The complaint box shows an example for the selected presentation, with a reminder that it reads after "presents with". The PC line is capitalised and drops a leading "a", "an" or "the".
+- New "How the history was obtained" options (in person, by telephone, via an interpreter, from ambulance handover, from medical records, limited by the patient's condition). The note states who gave the history and how. "Family member" and "Bystander" added as history sources.
+- Typed answers in the presentations added since version 35 now read as "Label: answer" instead of being forced into a sentence.
+- Examination items where side matters have Right / Left / Bilateral chips.
+- Examination lines made only of tapped findings no longer repeat the item label ("Pulse irregular." instead of "Pulse rhythm / heart sounds after fall — Pulse irregular."). Labels stay before typed text and Normal / Deferred / Declined.
+
 ## Version 39 — 12 November 2026
 - New presentations: Unwitnessed fall and Surgical site infection, each with bedside history, symptoms, examination by system and a bedside reminder. 44 presentations in total.
 - Anaphylaxis: "Conscious level" now offers its tick options (Alert, Confused, Drowsy, Unresponsive); it was showing as a plain text box.
