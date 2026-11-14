@@ -1,5 +1,8 @@
 # Changelog
 
+## Version 42 — 14 November 2026
+- Footer added: "Created by Dr. J. Levene", alongside the version number.
+
 ## Version 41 — 14 November 2026
 Authorised by Dr J. Levene. No change to clinical content, note wording or safeguards.
 - Works offline after the first visit and can be added to a phone's home screen. Only the page files are kept on the device, never anything entered.
