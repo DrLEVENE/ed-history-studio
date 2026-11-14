@@ -1,10 +1,12 @@
 # ED History Studio
 
-A single-page bedside tool for drafting emergency department histories and examination notes. Everything runs in the browser: no patient entries are stored or sent anywhere.
+A bedside tool for drafting emergency department histories and examination notes. Everything runs in the browser: no patient entries are stored or sent anywhere.
 
-- Open `index.html` in a browser, or serve the repository with GitHub Pages (Settings → Pages → Deploy from branch → `main` / root).
-- `index.html` and `dist/index.html` are the same file. Edit `dist/index.html`, then copy it to `index.html`.
-- No build step and no dependencies.
+Live site: https://drlevene.github.io/ed-history-studio/
+
+- Works offline after the first visit, and can be added to a phone's home screen.
+- No build step. Edit `app.js` (content and behaviour) and `styles.css` (appearance).
+- Automated checks: `npm install`, then `npm test`. They run on GitHub for every push.
 
 See `HANDOFF.md` for the rules to preserve when editing and `CHANGELOG.md` for version history.
 

@@ -1,0 +1,11 @@
+{
+  "name": "ed-history-studio",
+  "private": true,
+  "description": "Automated checks for ED History Studio. The site itself needs no build or dependencies.",
+  "scripts": {
+    "test": "node tests/run.js"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

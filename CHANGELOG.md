@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 41 — 14 November 2026
+Authorised by Dr J. Levene. No change to clinical content, note wording or safeguards.
+- Works offline after the first visit and can be added to a phone's home screen. Only the page files are kept on the device, never anything entered.
+- Page split into index.html, styles.css and app.js; the duplicate dist folder is removed.
+- Phones: examination systems start collapsed (each shows how many items are recorded), and every button and field is at least 44 px tall. Median length per presentation on an iPhone fell from 15 screens to 12.
+- Icon, page description and theme colour added.
+- 28 automated checks with fictional entries (tests/run.js) run on every push to GitHub.
+
 ## Version 40 — 12 November 2026
 - Every typed history box shows, in grey, the sentence it becomes in the note ("Note reads: The patient was found …"), so answers can be phrased to fit.
 - The complaint box shows an example for the selected presentation, with a reminder that it reads after "presents with". The PC line is capitalised and drops a leading "a", "an" or "the".

@@ -1,11 +1,18 @@
-# ED History Studio — version 40
+# ED History Studio — version 41
 
-Open dist/index.html directly in a browser. The active HTML, CSS and JavaScript are in this single file. The other dist files are older assets. No build or dependency installation is required.
+Open index.html directly in a browser, or use the live site. No build or dependency installation is needed to run it.
 
-For Claude: edit dist/index.html. Preserve the 44 alphabetical complaints, complaint-specific history and examination systems, and the PC × duration section before the HPC. The HPC opens with demographics, chronic illnesses and maintenance medication. Additional context comes before associated symptoms. Only explicitly denied symptoms enter the negatives. Keep patient entries in browser memory and preserve consent checks for intimate findings.
+Files:
+- index.html: page markup only.
+- styles.css: all styling.
+- app.js: all presentation content and behaviour.
+- sw.js, manifest.webmanifest and the PNG icons: offline use and "add to home screen". sw.js keeps a copy of these page files only, never anything entered. Change the CACHE name in sw.js when releasing a new version.
+- tests/run.js: automated checks with fictional entries. Run `npm install` once, then `npm test`. They also run on GitHub for every push (.github/workflows/test.yml).
 
-Use a fictional encounter to check complaint switching, symptom selection, examination grouping, note generation and copying. A new host has its own URL. To update the existing public bookmark, publish through the original Sites project.
+For Claude: edit app.js and styles.css. Preserve the 44 alphabetical complaints, complaint-specific history and examination systems, and the PC × duration section before the HPC. The HPC opens with demographics, chronic illnesses and maintenance medication. Additional context comes before associated symptoms. Only explicitly denied symptoms enter the negatives. Keep patient entries in browser memory and preserve consent checks for intimate findings. Keep the page free of external fonts, scripts and network requests.
 
-Published source commit: 98012a08428574b60a7db80f51445b5d947b8d97
+The note rebuilds itself after every entry (liveUpdate) and pauses once the clinician types in the note. Short dropdowns are shown as chips by chipify(); the original select stays in the page as the stored value, so read and write values through the select, not the chips.
 
-Interface rules since version 38: the note rebuilds itself after every entry (liveUpdate) and pauses once the clinician types in the note. Short dropdowns are shown as chips by chipify(); the original select stays in the page as the stored value, so read and write values through the select, not the chips. Keep the page free of external fonts, scripts and network requests.
+Run `npm test` before publishing, and add a check to tests/run.js for any new safeguard.
+
+Bedside reminders added from version 35 onwards (Foreign body, Anaphylaxis, Itching, Pain and aches, Unwitnessed fall, Surgical site infection) have not yet had clinical review.
