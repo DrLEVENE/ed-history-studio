@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 43 — 19 November 2026
+- New presentation: UTI / Dysuria, with bedside history, symptoms, examination by system (including urine dipstick and samples sent, renal angles, catheter findings and bladder scan) and a bedside reminder. 45 presentations in total.
+- Ticking an examination finding now clears every finding it conflicts with, not only the first. For example, "No renal angle tenderness" clears both left and right.
+
 ## Version 42 — 14 November 2026
 - Footer added: "Created by Dr. J. Levene", alongside the version number.
 

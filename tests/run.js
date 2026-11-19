@@ -24,7 +24,7 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   // 1. Presentation list
   const names = await page.evaluate(() => [...document.querySelectorAll('#condition option')].map(o => o.value));
   const sorted = [...names].sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base' }));
-  check('Presentations load (at least 44)', names.length >= 44, names.length + ' found');
+  check('Presentations load (at least 45)', names.length >= 45, names.length + ' found');
   check('Presentations are alphabetical', JSON.stringify(names) === JSON.stringify(sorted));
 
   // 2. Every presentation produces a note from typical entries
@@ -136,6 +136,15 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   await hip.locator('.side button:text-is("Right")').click();
   await settle();
   check('Side is recorded with the finding', /Right side: leg shortened and externally rotated/.test(await note()));
+
+  // 12b. A finding clears every finding it conflicts with
+  await clear();
+  await page.selectOption('#condition', 'UTI / Dysuria');
+  await page.evaluate(() => document.querySelectorAll('#normal-exam > details').forEach(d => (d.open = true)));
+  for (const t of ['Right renal angle tenderness', 'Left renal angle tenderness', 'No renal angle tenderness'])
+    await page.locator('input[aria-label="Renal angles — ' + t + '"]').click({ force: true });
+  const angles = await page.evaluate(() => [...document.querySelectorAll('input[aria-label^="Renal angles —"]')].filter(e => e.checked).map(e => e.getAttribute('aria-label')));
+  check('Conflicting findings are cleared (no renal angle tenderness clears both sides)', angles.length === 1 && /No renal/.test(angles[0]), angles.join(', '));
 
   // 13. Clear encounter
   await clear();
