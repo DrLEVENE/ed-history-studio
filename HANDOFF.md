@@ -1,4 +1,4 @@
-# ED History Studio — version 46
+# ED History Studio — version 45
 
 Open index.html directly in a browser, or use the live site. No build or dependency installation is needed to run it.
 
@@ -17,5 +17,3 @@ The note rebuilds itself after every entry (liveUpdate) and pauses once the clin
 Run `npm test` before publishing, and add a check to tests/run.js for any new safeguard.
 
 Bedside reminders added from version 35 onwards (Foreign body, Anaphylaxis, Itching, Pain and aches, Unwitnessed fall, Surgical site infection, UTI / Dysuria) have not yet had clinical review.
-
-Design rules since version 46 (from Impeccable's Operate mode, Unslop UI and minimalist-ui): the left column is one form sheet divided by hairlines, never cards or boxes inside it; four type sizes (12, 13.5, 15, 17 px) and three weights (400, 500, 600) as tokens in styles.css; spacing on a 4 px grid; no decorative motion; no eyebrow labels, narration or repeated reassurance in the interface text; placeholder text at least 4.5:1 contrast.

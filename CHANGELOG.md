@@ -1,15 +1,5 @@
 # Changelog
 
-## Version 46 — 19 November 2026
-Interface refinement using the Impeccable (Operate mode), Unslop UI and minimalist-ui design guides. No change to clinical content, note wording or safeguards.
-- The form is one continuous sheet with hairline dividers instead of stacked cards; examination systems and wording suggestions are flat lists instead of boxes inside boxes.
-- Four type sizes and three weights (was nine sizes and four weights); spacing moved onto a 4 px grid.
-- Placeholder text darkened to pass contrast (was 2.9:1, now 4.6:1); plain focus outline without a glow; text selection and the text cursor use the site's colours; buttons show a disabled state while the grammar checker loads.
-- Removed the fade-in of sections on scroll and the soft shadow under the note panel.
-- Interface text cut to what a clinician needs: removed narration ("Tap what you found", "Builds itself as you enter findings", "Each system becomes a paragraph", "Loaded … fields") and the repeated "nothing is assumed" messages. "Normal genital findings do not exclude sexual assault" now shows only for Sexual assault.
-- Bedside reminders shown as a short list, one point per line.
-- Presentation names shown with brackets instead of dashes, e.g. "Acute abdomen (atraumatic)"; "Other general findings" replaces "General — other findings / side / site / severity / measurements".
-
 ## Version 45 — 19 November 2026
 Smoother pertinent positives and negatives. Still built only from what was selected.
 - Positives: "Associated symptoms include dysuria, frequency and suprapubic pain." (was "The patient reports …").
