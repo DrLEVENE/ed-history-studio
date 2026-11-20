@@ -1,0 +1,38 @@
+# One-off: copies the published harper.js grammar checker (Apache-2.0, https://github.com/Automattic/harper)
+# from npm into vendor/harper so the site can serve it itself, with no outside requests.
+# Run again from the Actions tab to update Harper.
+name: Fetch Harper grammar checker
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/workflows/vendor-harper.yml']
+permissions:
+  contents: write
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Download harper.js
+        run: |
+          set -e
+          VERSION=$(npm view harper.js version)
+          npm pack "harper.js@$VERSION" --silent
+          mkdir -p tmp && tar -xzf "harper.js-$VERSION.tgz" -C tmp
+          rm -rf vendor/harper && mkdir -p vendor/harper
+          cp -r tmp/package/dist/. vendor/harper/
+          cp tmp/package/package.json vendor/harper/package.json
+          cp tmp/package/LICENSE* vendor/harper/ 2>/dev/null || true
+          (cd vendor/harper && ls -la) > vendor/harper/FILES.txt
+          echo "$VERSION" > vendor/harper/VERSION
+          rm -rf tmp "harper.js-$VERSION.tgz"
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add vendor/harper
+          git diff --cached --quiet || git commit -m "Add harper.js $(cat vendor/harper/VERSION) from npm (Apache-2.0)"
+          git push
