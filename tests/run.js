@@ -5,6 +5,7 @@ const { chromium, devices } = require('playwright');
 
 const PAGE = 'file://' + path.resolve(__dirname, '..', 'index.html');
 const results = [];
+const g0Sym = (pg, t, v) => pg.locator('#symptoms .rapid-row').filter({ has: pg.locator('span', { hasText: new RegExp('^' + t + '$') }) }).locator('button[data-value=' + v + ']').click();
 const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail });
 
 (async () => {
@@ -61,8 +62,8 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   await row('Syncope').locator('button[data-value=absent]').click();
   await settle();
   text = await note();
-  check('Present symptom is reported', /reports dyspnoea/i.test(text));
-  check('Denied symptom is listed', /denies: syncope\./i.test(text), text.match(/denies[^.]*\./i)?.[0]);
+  check('Present symptom is reported', /Associated symptoms include dyspnoea\./.test(text), text.match(/Associated[^.]*\./)?.[0]);
+  check('Denied symptom is listed', /The patient denies syncope\./.test(text), text.match(/denies[^.]*\./i)?.[0]);
 
   // 5. Durations
   await page.fill('#dur0', '2/24');
@@ -127,6 +128,10 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   await settle();
   text = await note();
   check('Note states who gave the history and how', /History was obtained from the family member by telephone\./.test(text));
+  await g0Sym(page, 'Head strike', 'present'); await g0Sym(page, 'Neck pain', 'absent'); await g0Sym(page, 'Vomiting', 'absent');
+  await settle();
+  text = await note();
+  check('Symptoms from someone else are attributed to them', /According to the family member, associated symptoms include head strike\./.test(text) && /The family member reports no vomiting or neck pain\.|The family member reports no neck pain or vomiting\./.test(text), text.match(/(According|The family member reports)[^.]*\./g)?.join(' '));
   check('PC line is capitalised without a leading article', /PC:\nUnwitnessed fall at home/.test(text));
 
   // 12. Side chips

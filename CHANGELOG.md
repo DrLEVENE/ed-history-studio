@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 45 — 19 November 2026
+Smoother pertinent positives and negatives. Still built only from what was selected.
+- Positives: "Associated symptoms include dysuria, frequency and suprapubic pain." (was "The patient reports …").
+- Negatives: "She denies fever, loin pain, or vaginal discharge." (was "Patient denies: fever, loin pain, and vaginal discharge."). "She" or "He" is used only when sex is entered; otherwise "The patient".
+- History from someone else stays attributed: "According to the family member, associated symptoms include …" and "The family member reports no …".
+- Uncertain and declined symptoms follow the negatives; the closing line also uses "She" or "He" when sex is entered.
+
 ## Version 44 — 19 November 2026
 - New "Check wording" button under the note. It checks the HPC for spelling, grammar and wording (for example "She have" → "has", "Their was" → "There was", "too the back", repeated words, missing apostrophes, double spaces) and offers one-tap fixes, Ignore, and Add to dictionary.
 - Uses Harper (https://github.com/Automattic/harper, Apache-2.0), served from this site and run on the device in a background worker. Nothing is sent. The first check downloads about 20 MB; later checks are near-instant and work offline.
