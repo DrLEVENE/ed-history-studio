@@ -184,6 +184,41 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   await fresh.waitForTimeout(500);
   check('No requests leave the page', outside.length === 0, outside.join(', '));
 
+  // 17. Check wording (Harper) runs on the device and fixes the HPC
+  const http = require('http'), fs = require('fs'), ROOT = path.resolve(__dirname, '..');
+  const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.wasm': 'application/wasm', '.json': 'application/json', '.png': 'image/png', '.webmanifest': 'application/manifest+json' };
+  const server = http.createServer((req, res) => {
+    const rel = decodeURIComponent(req.url.split('?')[0]), file = path.join(ROOT, rel === '/' ? 'index.html' : rel);
+    if (!file.startsWith(ROOT) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) { res.writeHead(404); return res.end(); }
+    res.writeHead(200, { 'Content-Type': types[path.extname(file)] || 'application/octet-stream' });
+    fs.createReadStream(file).pipe(res);
+  });
+  await new Promise(r => server.listen(0, '127.0.0.1', r));
+  const base = 'http://127.0.0.1:' + server.address().port;
+  const g = await browser.newPage();
+  const leaving = [];
+  g.on('pageerror', e => errors.push(e.message));
+  g.on('request', r => { if (!r.url().startsWith(base) && !r.url().startsWith('blob:' + base)) leaving.push(r.url()); });
+  g.on('dialog', d => d.accept());
+  await g.goto(base + '/index.html');
+  await g.selectOption('#condition', 'UTI / Dysuria');
+  await g.fill('#pc0', 'burning on passing urine');
+  await g.locator('#fields label', { hasText: 'Onset / duration / course' }).first().locator('input').fill('started 3 days ago with no recall of of any trigger');
+  await g.locator('#symptoms .rapid-row').filter({ has: g.locator('span', { hasText: /^Dysuria$/ }) }).locator('button[data-value=present]').click();
+  await g.locator('#symptoms .rapid-row').filter({ has: g.locator('span', { hasText: /^Suprapubic pain$/ }) }).locator('button[data-value=present]').click();
+  await g.waitForTimeout(500);
+  const ready = () => g.waitForFunction(() => !document.getElementById('checkwording').disabled && !/Loading|Checking/.test(document.getElementById('grammar-note').textContent), null, { timeout: 120000 });
+  await g.click('#checkwording');
+  await ready();
+  const found = await g.evaluate(() => [...document.querySelectorAll('#grammar-list .lint mark')].map(m => m.textContent));
+  check('Check wording finds a repeated word', found.includes('of of'), found.join(', ') || await g.textContent('#grammar-note'));
+  check('Check wording does not flag the site\'s medical words', !found.some(w => /dysuria|suprapubic/i.test(w)), found.join(', '));
+  await g.locator('#grammar-list .lint', { hasText: 'of of' }).locator('button', { hasText: 'Change to' }).first().click();
+  await g.waitForTimeout(1500);
+  check('Applying a suggestion corrects the note', !(await g.inputValue('#output')).includes('of of'));
+  check('Check wording sends nothing off the device', leaving.length === 0, leaving.join(', '));
+  server.close();
+
   check('No script errors', errors.length === 0, errors.join(' | '));
   await browser.close();
 

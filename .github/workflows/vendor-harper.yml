@@ -1,11 +1,9 @@
 # One-off: copies the published harper.js grammar checker (Apache-2.0, https://github.com/Automattic/harper)
 # from npm into vendor/harper so the site can serve it itself, with no outside requests.
-# Run again from the Actions tab to update Harper.
+# To update Harper, run it from the Actions tab, then re-run the site's tests.
 name: Fetch Harper grammar checker
 on:
   workflow_dispatch:
-  push:
-    paths: ['.github/workflows/vendor-harper.yml']
 permissions:
   contents: write
 jobs:
@@ -26,7 +24,7 @@ jobs:
           cp -r tmp/package/dist/. vendor/harper/
           cp tmp/package/package.json vendor/harper/package.json
           cp tmp/package/LICENSE* vendor/harper/ 2>/dev/null || true
-          (cd vendor/harper && ls -la) > vendor/harper/FILES.txt
+          (cd vendor/harper && rm -f *Inlined* *slim* *.d.ts tsdoc-metadata.json)
           echo "$VERSION" > vendor/harper/VERSION
           rm -rf tmp "harper.js-$VERSION.tgz"
       - name: Commit

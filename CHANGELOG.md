@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 44 — 19 November 2026
+- New "Check wording" button under the note. It checks the HPC for spelling, grammar and wording (for example "She have" → "has", "Their was" → "There was", "too the back", repeated words, missing apostrophes, double spaces) and offers one-tap fixes, Ignore, and Add to dictionary.
+- Uses Harper (https://github.com/Automattic/harper, Apache-2.0), served from this site and run on the device in a background worker. Nothing is sent. The first check downloads about 20 MB; later checks are near-instant and work offline.
+- British English. Every word used in the site's own presentations, plus a list of common ED terms, drugs and abbreviations, is treated as correctly spelt.
+- Applying a fix counts as editing the note, so automatic updates pause in the usual way. Suggestions clear when the note changes.
+- Four new automated checks (33 in total).
+
 ## Version 43 — 19 November 2026
 - New presentation: UTI / Dysuria, with bedside history, symptoms, examination by system (including urine dipstick and samples sent, renal angles, catheter findings and bladder scan) and a bedside reminder. 45 presentations in total.
 - Ticking an examination finding now clears every finding it conflicts with, not only the first. For example, "No renal angle tenderness" clears both left and right.

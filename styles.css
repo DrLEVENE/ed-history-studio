@@ -139,3 +139,15 @@ main h2{scroll-margin-top:12px}
 .credit{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 16px;align-items:baseline;margin:26px 0 0;padding-top:14px;border-top:1px solid var(--rule);font-size:12.5px;color:var(--muted)}
 .credit p,.credit #version{margin:0}
 .credit p:first-child{color:var(--ink);font-weight:600}
+/* Check wording */
+.grammar{margin-top:14px;padding-top:12px;border-top:1px solid var(--rule)}
+.grammar #grammar-note{margin:8px 0 0}
+#grammar-list{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:10px;max-height:46vh;overflow:auto}
+.lint{border:1px solid var(--rule);border-radius:10px;padding:10px 12px;background:#fff}
+.lint p{margin:0}
+.lint-context{font-size:13.5px;line-height:1.5}
+.lint-kind{display:inline-block;margin-right:8px;padding:1px 8px;border-radius:999px;background:var(--tint);color:var(--teal-dark);font-size:12px;font-weight:600}
+.lint mark{background:#fde3cf;color:inherit;border-radius:3px;padding:0 2px}
+.lint-message{margin-top:4px!important;font-size:12.5px;color:var(--muted)}
+.lint-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.lint-actions button{padding:6px 11px;font-size:13px}

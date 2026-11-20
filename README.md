@@ -5,6 +5,7 @@ A bedside tool for drafting emergency department histories and examination notes
 Live site: https://drlevene.github.io/ed-history-studio/
 
 - Works offline after the first visit, and can be added to a phone's home screen.
+- "Check wording" suggests spelling, grammar and wording fixes for the HPC using [Harper](https://github.com/Automattic/harper) (Apache-2.0), which runs on the device. The note is never sent anywhere.
 - No build step. Edit `app.js` (content and behaviour) and `styles.css` (appearance).
 - Automated checks: `npm install`, then `npm test`. They run on GitHub for every push.
 

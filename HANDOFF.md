@@ -1,4 +1,4 @@
-# ED History Studio — version 43
+# ED History Studio — version 44
 
 Open index.html directly in a browser, or use the live site. No build or dependency installation is needed to run it.
 
@@ -6,6 +6,7 @@ Files:
 - index.html: page markup only.
 - styles.css: all styling.
 - app.js: all presentation content and behaviour.
+- grammar.js: the "Check wording" button. It uses Harper (vendor/harper, Apache-2.0, fetched from npm by .github/workflows/vendor-harper.yml), which runs on the device in a background worker and sends nothing. Words used anywhere in the site's presentations, plus the clinical word list in grammar.js, count as correct spellings.
 - sw.js, manifest.webmanifest and the PNG icons: offline use and "add to home screen". sw.js keeps a copy of these page files only, never anything entered. Change the CACHE name in sw.js when releasing a new version.
 - tests/run.js: automated checks with fictional entries. Run `npm install` once, then `npm test`. They also run on GitHub for every push (.github/workflows/test.yml).
 
