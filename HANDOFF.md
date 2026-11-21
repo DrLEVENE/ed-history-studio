@@ -1,4 +1,4 @@
-# ED History Studio — version 45
+# ED History Studio — version 47
 
 Open index.html directly in a browser, or use the live site. No build or dependency installation is needed to run it.
 
@@ -17,3 +17,5 @@ The note rebuilds itself after every entry (liveUpdate) and pauses once the clin
 Run `npm test` before publishing, and add a check to tests/run.js for any new safeguard.
 
 Bedside reminders added from version 35 onwards (Foreign body, Anaphylaxis, Itching, Pain and aches, Unwitnessed fall, Surgical site infection, UTI / Dysuria) have not yet had clinical review.
+
+My quick normal exam (version 47): Dr Levene's usual normal general, abdominal, respiratory and cardiovascular findings, applied with one tap and removed with a second. These four systems appear on every presentation. normalClashes lists which abnormal findings contradict each normal one; the button skips any normal finding whose abnormal is already ticked, and ticking an abnormal finding clears the contradicted normal.

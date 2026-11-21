@@ -151,6 +151,26 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   const angles = await page.evaluate(() => [...document.querySelectorAll('input[aria-label^="Renal angles —"]')].filter(e => e.checked).map(e => e.getAttribute('aria-label')));
   check('Conflicting findings are cleared (no renal angle tenderness clears both sides)', angles.length === 1 && /No renal/.test(angles[0]), angles.join(', '));
 
+  // 12c. My quick normal exam: exact wording, clash protection, removal
+  await clear();
+  await page.selectOption('#condition', 'Fracture');
+  await page.fill('#pc0', 'a painful wrist');
+  await page.click('#quicknormal');
+  await settle();
+  const quickTarget = 'General appearance and observations\nPatient in no distress. Mucous membranes pink and moist. Anicteric and acyanotic.\n\nAbdominal examination\nAbdomen not distended. Abdomen soft and non-tender. No guarding or rigidity. No palpable masses. No palpable hepatomegaly or splenomegaly. Bowel sounds heard.\n\nRespiratory system\nChest expansion symmetrical. No crackles or wheeze. No increased work of breathing. Air entry equal bilaterally.\n\nCardiovascular system\nPulse regular with normal volume. S1 and S2 heard. No murmurs or added heart sounds.';
+  const examPart = async () => ((await note()).split('EXAMINATION:\n')[1] || '').split('\n\nPLAN')[0].trim();
+  check('Quick normal exam writes Dr Levene\'s wording exactly', (await examPart()) === quickTarget, await examPart());
+  await page.click('#quicknormal');
+  await settle();
+  check('Quick normal exam can be removed in one tap', (await examPart()) === '');
+  await page.evaluate(() => { const w = document.querySelector('#normal-exam input[data-system="Respiratory"][data-finding="Wheeze"]'); w.closest('details').open = true; w.click(); });
+  await page.click('#quicknormal');
+  await settle();
+  check('Quick normal exam never overrides a ticked abnormal finding', !/No crackles or wheeze|No wheeze/.test(await examPart()) && /Wheeze\./.test(await examPart()));
+  await page.evaluate(() => document.querySelector('#normal-exam input[data-system="Cardiovascular"][data-finding="Murmur"]').click());
+  await settle();
+  check('Ticking an abnormal finding clears the normal it contradicts', /Murmur\./.test(await examPart()) && !/No murmurs?/.test(await examPart()));
+
   // 13. Clear encounter
   await clear();
   const leftovers = await page.evaluate(() => ({

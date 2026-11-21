@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 47 — 21 November 2026
+(Version 46 was withdrawn; this builds on version 45.)
+- New "My quick normal exam" button in the examination section. One tap ticks Dr Levene's usual normal findings for general appearance, abdomen, respiratory and cardiovascular systems; a second tap removes them. It is applied only when tapped.
+- General, abdominal, respiratory and cardiovascular sections now appear on every presentation, so the button works everywhere.
+- "Air entry equal bilaterally" added as a respiratory normal finding.
+- The button never overrides a real finding: if a contradicting abnormal finding is already ticked (for example Wheeze), the matching normal ("No wheeze") is skipped and the skipped items are listed. Ticking an abnormal finding now clears any normal finding it contradicts, in these four systems.
+- Four new automated checks.
+
 ## Version 45 — 19 November 2026
 Smoother pertinent positives and negatives. Still built only from what was selected.
 - Positives: "Associated symptoms include dysuria, frequency and suprapubic pain." (was "The patient reports …").
