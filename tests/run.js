@@ -171,6 +171,35 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   await settle();
   check('Ticking an abnormal finding clears the normal it contradicts', /Murmur\./.test(await examPart()) && !/No murmurs?/.test(await examPart()));
 
+  // 12d. Version 48: observations at the top, time seen, copy by section, keyboard, essentials, quick normal check
+  await clear();
+  await page.selectOption('#condition', 'Chest pain');
+  check('Observations sit at the top of the form', await page.evaluate(() => !!document.querySelector('#obs-slot #e1-v-hr') && !document.querySelector('#exam #e1-v-hr')));
+  await page.fill('#pc0', 'chest pain');
+  await page.fill('#e1-v-hr', '120');
+  await settle();
+  await page.selectOption('#condition', 'UTI / Dysuria');
+  await settle();
+  check('Observations survive switching presentation', (await page.inputValue('#e1-v-hr')) === '120' && /HR 120 \/min/.test(await note()));
+  await page.click('#timenow');
+  await settle();
+  check('Time seen is added to the note when set', /^TIME SEEN: \d\d:\d\d\n\nPC:/.test(await note()), (await note()).slice(0, 40));
+  const hpcOnly = await page.evaluate(() => noteSection(document.getElementById('output').value, 'HPC')?.body || '');
+  check('Copy section picks out just that section', hpcOnly.length > 0 && !/PC:|EXAMINATION:|TIME SEEN/.test(hpcOnly), hpcOnly.slice(0, 60));
+  await page.click('.copyparts button[data-part="PLAN"]');
+  check('Copying a missing section says so', /no Plan section/.test(await status()), await status());
+  await page.click('#quicknormal');
+  await settle();
+  const prompts = await page.evaluate(() => [...document.querySelectorAll('#quicknormal-check li')].map(l => l.textContent));
+  check('Quick normal exam prompts when heart rate is abnormal', prompts.some(t => /Heart rate 120/.test(t)), prompts.join(' | '));
+  check('The prompt never blocks the note', /Pulse regular with normal volume/.test(await note()));
+  await page.focus('#age');
+  let tabs = 0;
+  for (; tabs < 40; tabs++) { await page.keyboard.press('Tab'); if (await page.evaluate(() => document.activeElement.id === 'pc0')) break; }
+  check('Age to Complaint takes at most 10 Tab presses', tabs + 1 <= 10, (tabs + 1) + ' presses');
+  await page.locator('#intro .quick-options button:text-is("Male")').focus();
+  await page.keyboard.press('ArrowRight');
+  check('Arrow keys move within a chip group', await page.evaluate(() => document.activeElement.textContent === 'Female'));
   // 13. Clear encounter
   await clear();
   const leftovers = await page.evaluate(() => ({

@@ -1,5 +1,15 @@
 # Changelog
 
+## Version 48 — 23 November 2026
+Faster at the bedside. No change to clinical content.
+- Observations moved to the top, under Patient, with an optional "Time seen" and a Now button. Vital signs now carry over when the presentation is changed. "TIME SEEN: hh:mm" heads the note when set.
+- Copy by section: PC, HPC, Examination and Plan can each be copied on their own, beside "Copy all".
+- Keyboard: each chip group and the symptom list is a single Tab stop, with arrow keys inside. Age to Complaint fell from 26 Tab presses to 8.
+- After "My quick normal exam", a non-blocking prompt appears when the observations or symptoms sit oddly with the normal findings (heart rate of 100 or more or 50 or less, systolic BP under 90, respiratory rate of 22 or more, SpO₂ under 94 %, temperature of 38 °C or more, or reported breathlessness).
+- "Mark the rest as asked and denied" only ever applies to symptoms on screen.
+- Tried and withdrawn: showing only the first history items and symptoms. The lists are not in clinical priority order, and it hid red flags (for example fever, loin pain and new confusion in UTI / Dysuria).
+- Nine new automated checks (47 in total).
+
 ## Version 47 — 21 November 2026
 (Version 46 was withdrawn; this builds on version 45.)
 - New "My quick normal exam" button in the examination section. One tap ticks Dr Levene's usual normal findings for general appearance, abdomen, respiratory and cardiovascular systems; a second tap removes them. It is applied only when tapped.
