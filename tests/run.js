@@ -273,6 +273,23 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   check('Check wording sends nothing off the device', leaving.length === 0, leaving.join(', '));
   server.close();
 
+  // Version 50: form safety and accessibility
+  await clear();
+  await page.selectOption('#condition', 'Chest pain'); await settle();
+  const v50 = await page.evaluate(() => ({
+    autofill: [...document.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=hidden]),textarea')].filter(e => e.autocomplete !== 'off').length,
+    keypad: [...document.querySelectorAll('input[type=number]')].filter(e => e.inputMode !== 'decimal').length,
+    unnamed: [...document.querySelectorAll('button.more')].filter(b => !/^Add detail: ./.test(b.getAttribute('aria-label') || '')).length }));
+  check('Browser form history is off for every field', v50.autofill === 0, v50.autofill + ' fields allow autofill');
+  check('Number fields use the decimal keypad', v50.keypad === 0, v50.keypad + ' without');
+  check('Each Add detail button names its question', v50.unnamed === 0, v50.unnamed + ' unnamed');
+  await page.fill('#e1-v-hr', '999'); await settle();
+  const err = await page.locator('#e1-v-hr-err').textContent().catch(() => '');
+  check('Out-of-range observation is flagged beside the field', /Outside 1–400/.test(err) && await page.getAttribute('#e1-v-hr', 'aria-invalid') === 'true', err);
+  await page.fill('#e1-v-hr', '99'); await settle();
+  check('Correcting it clears the flag and resumes the note', !(await page.locator('#e1-v-hr-err').count()) && /HR 99 \/min/.test(await note()));
+  await clear();
+
   check('No script errors', errors.length === 0, errors.join(' | '));
   await browser.close();
 

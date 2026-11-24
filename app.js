@@ -1073,3 +1073,32 @@ if(!reduceMotion&&'IntersectionObserver' in window){const io=new IntersectionObs
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
   addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
+
+// Version 50: form safety and accessibility. No change to how the page looks.
+(function(){
+  // Stop the browser keeping form history of patient details and offering them on the next patient.
+  // Number fields get the decimal keypad on phones.
+  const harden=()=>document.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=hidden]),textarea').forEach(e=>{
+    if(e.getAttribute('autocomplete')!=='off')e.setAttribute('autocomplete','off');
+    if(e.type==='number'&&!e.getAttribute('inputmode'))e.setAttribute('inputmode','decimal');
+  });
+  // "Add detail" buttons say which question they belong to.
+  const nameMore=()=>document.querySelectorAll('button.more:not([aria-label])').forEach(b=>{
+    const box=b.closest('.quick-field, .exam-quick');const t=box?.querySelector(':scope > label, :scope > .lbl, :scope > span, :scope > .exam-head > label')?.firstChild?.textContent?.trim();
+    if(t)b.setAttribute('aria-label','Add detail: '+t);
+  });
+  // Out-of-range age or observation: say so beside the field, not only under the note.
+  const problem=e=>{const raw=e.value.trim();if(raw==='')return '';const n=Number(raw);
+    if(e.id==='age'){const msg=ageProblem();return msg?msg+' Note paused until fixed.':''}
+    if(!Number.isFinite(n)||n<Number(e.min)||n>Number(e.max))return 'Outside '+e.min+'–'+e.max+'. Note paused until fixed.';return ''};
+  const check=e=>{if(!e||!(e.id==='age'||/-v-/.test(e.id))||e.type!=='number')return;const msg=problem(e);let err=document.getElementById(e.id+'-err');
+    if(msg){if(!err){err=document.createElement('span');err.id=e.id+'-err';err.className='fielderr';err.setAttribute('role','alert');e.after(err)}
+      if(err.textContent!==msg)err.textContent=msg;e.setAttribute('aria-invalid','true');e.setAttribute('aria-describedby',err.id)}
+    else{err?.remove();e.removeAttribute('aria-invalid');if(e.getAttribute('aria-describedby')===e.id+'-err')e.removeAttribute('aria-describedby')}};
+  document.addEventListener('input',ev=>check(ev.target),true);
+  document.addEventListener('change',ev=>{if(ev.target.id==='ageunit')check(document.getElementById('age'))},true);
+  let queued=false;const tidy=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;harden();nameMore();
+    document.querySelectorAll('#age, input[type=number][id*="-v-"]').forEach(check)})};
+  document.addEventListener('click',ev=>{if(ev.target.id==='reset')setTimeout(tidy,0)});
+  new MutationObserver(tidy).observe(document.body,{childList:true,subtree:true});tidy();
+})();

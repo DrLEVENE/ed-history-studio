@@ -1,5 +1,15 @@
 # Changelog
 
+## Version 50 — 23 November 2026
+(Version 49, a new colour theme, was withdrawn; this builds on version 48.) Checked against the ui-ux-pro-max accessibility and form guidelines. No change to how the page looks or to clinical content.
+- Privacy: the browser no longer keeps form history of what is typed. Before, Chrome and Safari could remember names, complaints and medicines and offer them as suggestions on the next patient.
+- An out-of-range age or observation (for example HR 999) is now flagged in orange right under that field and announced to screen readers. Before, the note silently stopped updating and the only message sat under the note.
+- On phones, a field reached with the keyboard or the "next field" arrows is no longer hidden behind the bottom bar (7 of the first 40 fields were).
+- Number fields open the decimal keypad on phones.
+- Each "Add detail" button now tells screen readers which question it belongs to.
+- Already met before this version: text contrast, visible focus rings, labels on every field, 44 px touch targets on phones, reduced motion, no sideways scrolling.
+- Five new automated checks (52 in total).
+
 ## Version 48 — 23 November 2026
 Faster at the bedside. No change to clinical content.
 - Observations moved to the top, under Patient, with an optional "Time seen" and a Now button. Vital signs now carry over when the presentation is changed. "TIME SEEN: hh:mm" heads the note when set.

@@ -1,4 +1,4 @@
-# ED History Studio — version 48
+# ED History Studio — version 50
 
 Open index.html directly in a browser, or use the live site. No build or dependency installation is needed to run it.
 
@@ -21,3 +21,5 @@ Bedside reminders added from version 35 onwards (Foreign body, Anaphylaxis, Itch
 My quick normal exam (version 47): Dr Levene's usual normal general, abdominal, respiratory and cardiovascular findings, applied with one tap and removed with a second. These four systems appear on every presentation. normalClashes lists which abnormal findings contradict each normal one; the button skips any normal finding whose abnormal is already ticked, and ticking an abnormal finding clears the contradicted normal.
 
 Version 48: observations (vital signs) live in the Observations card at the top and belong to the patient, not the presentation (obsValues, moveObservations). Each chip group and the symptom list is one Tab stop with arrow keys inside (rove). Copy by section uses noteSection(). quickNormalCheck() shows non-blocking prompts. Do not hide history or symptom items by position: the lists are not ordered by clinical priority, and folding them hid red flags (tried and withdrawn in version 48).
+
+Version 50: an IIFE at the end of app.js sets autocomplete="off" and inputmode="decimal" on every field (a MutationObserver reapplies it to fields built later), names each "Add detail" button, and shows inline .fielderr messages with aria-invalid for out-of-range age and vital signs (the note still pauses, as before). styles.css adds scroll-padding-bottom on phones so focused fields clear the fixed bottom bar. Version 49 (blue glass theme) was withdrawn at Dr Levene's request; keep the current look unless he asks for a change.
