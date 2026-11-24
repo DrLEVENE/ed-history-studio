@@ -1,0 +1,41 @@
+# One-off: copies Tesseract.js (Apache-2.0, https://github.com/naptha/tesseract.js), its WebAssembly core
+# and the English language data from npm into vendor/tesseract, so photos are read on the device and the
+# site makes no outside requests. To update, change the versions below and run it from the Actions tab.
+name: Fetch Tesseract text reader
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Download
+        run: |
+          set -e
+          mkdir -p tmp && cd tmp
+          npm pack tesseract.js@5.1.1 tesseract.js-core@5.1.1 @tesseract.js-data/eng@1.0.0 --silent
+          for f in *.tgz; do mkdir -p "x-$f" && tar -xzf "$f" -C "x-$f"; done
+          cd ..
+          rm -rf vendor/tesseract && mkdir -p vendor/tesseract/core vendor/tesseract/lang
+          T=tmp/x-tesseract.js-5.1.1.tgz/package
+          C=tmp/x-tesseract.js-core-5.1.1.tgz/package
+          E=$(ls -d tmp/x-tesseract.js-data-eng-1.0.0.tgz/package)
+          cp $T/dist/tesseract.min.js $T/dist/worker.min.js vendor/tesseract/
+          cp $T/LICENSE* vendor/tesseract/ 2>/dev/null || cp $T/LICENSE.md vendor/tesseract/ || true
+          cp $C/tesseract-core-lstm.wasm.js $C/tesseract-core-simd-lstm.wasm.js $C/tesseract-core-relaxedsimd-lstm.wasm.js vendor/tesseract/core/ 2>/dev/null || cp $C/tesseract-core*lstm.wasm.js vendor/tesseract/core/
+          cp $E/4.0.0_best_int/eng.traineddata.gz vendor/tesseract/lang/
+          ls -laR vendor/tesseract
+          echo "tesseract.js 5.1.1, tesseract.js-core 5.1.1, @tesseract.js-data/eng 1.0.0 (4.0.0_best_int)" > vendor/tesseract/VERSION
+          rm -rf tmp
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add vendor/tesseract
+          git diff --cached --quiet || git commit -m "Add Tesseract.js 5.1.1 and English data from npm (Apache-2.0)"
+          git push
