@@ -166,3 +166,43 @@ main h2{scroll-margin-top:12px}
 .quickcheck{flex-basis:100%;margin:6px 0 0;padding:8px 12px 8px 28px;border-radius:8px;background:var(--abn);color:var(--abn-on);font-size:13px;line-height:1.5}
 .quickcheck li+li{margin-top:2px}
 @media(pointer:coarse){.copyparts button{min-height:44px}}
+
+/* ===== Theme: blue glass (version 49) =====
+   Blue and white, frosted-glass panels, glowing blue accents and smooth hover.
+   Kept as one block so it can be removed in one step. Clinical colours (amber abnormal findings) are unchanged. */
+:root{--ink:#0f1f3d;--muted:#4d5f7e;--paper:#eef3fb;--sheet:rgba(255,255,255,.72);--rule:rgba(37,99,235,.14);--rule-strong:rgba(37,99,235,.28);--teal:#2563eb;--teal-dark:#1d4ed8;--tint:#e3ecff;--slate:#475569;--bar:rgba(15,30,70,.78);--glow:0 0 0 1px rgba(59,130,246,.35),0 6px 22px -6px rgba(37,99,235,.55);--glass-shadow:0 1px 1px rgba(15,31,61,.04),0 18px 40px -24px rgba(30,64,175,.35)}
+body{background:radial-gradient(1200px 600px at 8% -10%,#dbe8ff 0%,transparent 60%),radial-gradient(900px 500px at 100% 0%,#e6f0ff 0%,transparent 55%),linear-gradient(180deg,#f4f8ff 0%,#eaf1fc 100%);background-attachment:fixed}
+::selection{background:#cfe0ff}
+.appbar{background:var(--bar);-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);border-bottom:1px solid rgba(147,197,253,.25);box-shadow:0 8px 24px -18px rgba(15,30,70,.8)}
+.appbar #reset{border-color:rgba(191,219,254,.45)}
+.secnav button{color:#c7d7f5;transition:background-color .2s ease,color .2s ease,box-shadow .2s ease}
+.secnav button[aria-current=true]{background:#fff;color:#1e3a8a;box-shadow:0 0 18px -2px rgba(96,165,250,.7)}
+#progress{background:linear-gradient(90deg,#60a5fa,#2563eb);box-shadow:0 0 10px rgba(59,130,246,.8)}
+.card{background:var(--sheet);-webkit-backdrop-filter:blur(16px) saturate(150%);backdrop-filter:blur(16px) saturate(150%);border:1px solid rgba(255,255,255,.75);box-shadow:var(--glass-shadow);border-radius:16px;transition:box-shadow .25s ease,transform .25s ease}
+.card:focus-within{box-shadow:0 0 0 1px rgba(59,130,246,.25),0 22px 48px -26px rgba(30,64,175,.5)}
+.output{box-shadow:var(--glass-shadow)}
+#output{background:#fff;border-color:rgba(37,99,235,.2)}
+select,input,textarea{background:rgba(255,255,255,.9);transition:border-color .2s ease,box-shadow .2s ease}
+select:focus,input:focus,textarea:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.22),0 0 16px -4px rgba(59,130,246,.6)}
+button{background:linear-gradient(180deg,#3b82f6,#2563eb);transition:transform .18s ease,box-shadow .2s ease,background .2s ease}
+button:hover{background:linear-gradient(180deg,#2f74ec,#1d4ed8);box-shadow:var(--glow);transform:translateY(-1px)}
+button:active{transform:translateY(0) scale(.98);box-shadow:none}
+button.secondary{background:rgba(255,255,255,.75);color:#1e3a8a;border:1px solid rgba(37,99,235,.2)}
+button.secondary:hover{background:#fff;border-color:rgba(37,99,235,.4);box-shadow:0 6px 18px -10px rgba(37,99,235,.55)}
+.quick-options label,.quick-options button{background:rgba(255,255,255,.8);border-color:rgba(37,99,235,.22);transition:background-color .2s ease,border-color .2s ease,color .2s ease,box-shadow .2s ease,transform .18s ease}
+.quick-options label:hover,.quick-options button:hover{background:#fff;border-color:rgba(37,99,235,.45);transform:translateY(-1px);box-shadow:0 6px 16px -10px rgba(37,99,235,.6)}
+.quick-options label:has(input:checked),.quick-options button[aria-pressed=true]{background:linear-gradient(180deg,#3b82f6,#2563eb)!important;border-color:#2563eb;color:#fff;box-shadow:var(--glow)}
+.quick-options label.abnormal:not(:has(input:checked)):hover{background:#ffeedd;border-color:#e3b896;box-shadow:0 6px 16px -10px rgba(154,74,18,.5)}
+.quick-options label.abnormal:has(input:checked){box-shadow:0 0 0 1px rgba(154,74,18,.3),0 6px 18px -8px rgba(154,74,18,.55)}
+.rapid-row{transition:background-color .2s ease}
+.rapid-row:hover{background:rgba(219,234,254,.55)}
+.rapid-row button{background:rgba(226,236,252,.9);color:#1e3a8a}
+.rapid-row button[data-value=present][aria-pressed=true]{background:linear-gradient(180deg,#3b82f6,#2563eb);box-shadow:var(--glow)}
+.rapid-row[data-state=present] span{color:#1d4ed8}
+#normal-exam>details.exam-quick{background:rgba(255,255,255,.6);border-color:rgba(37,99,235,.14);border-radius:14px;transition:box-shadow .25s ease,border-color .25s ease}
+#normal-exam>details.exam-quick:hover{border-color:rgba(37,99,235,.3);box-shadow:0 10px 26px -20px rgba(30,64,175,.6)}
+#normal-exam summary[data-count]::after{background:#e3ecff;color:#1d4ed8;box-shadow:0 0 12px -4px rgba(59,130,246,.7)}
+#quicknormal[aria-pressed=true]{background:linear-gradient(180deg,#3b82f6,#2563eb);color:#fff;box-shadow:var(--glow)}
+.quickbar{background:rgba(255,255,255,.78);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.card,.quickbar{background:#fff}.appbar{background:#13234a}}
+@media(prefers-reduced-motion:reduce){button:hover,.quick-options label:hover,.quick-options button:hover{transform:none}}
