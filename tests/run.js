@@ -240,7 +240,7 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
 
   // 17. Check wording (Harper) runs on the device and fixes the HPC
   const http = require('http'), fs = require('fs'), ROOT = path.resolve(__dirname, '..');
-  const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.wasm': 'application/wasm', '.json': 'application/json', '.png': 'image/png', '.webmanifest': 'application/manifest+json' };
+  const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.wasm': 'application/wasm', '.json': 'application/json', '.png': 'image/png', '.gz': 'application/gzip', '.jpg': 'image/jpeg', '.webmanifest': 'application/manifest+json' };
   const server = http.createServer((req, res) => {
     const rel = decodeURIComponent(req.url.split('?')[0]), file = path.join(ROOT, rel === '/' ? 'index.html' : rel);
     if (!file.startsWith(ROOT) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) { res.writeHead(404); return res.end(); }
@@ -254,6 +254,7 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   g.on('pageerror', e => errors.push(e.message));
   g.on('request', r => { if (!r.url().startsWith(base) && !r.url().startsWith('blob:' + base)) leaving.push(r.url()); });
   g.on('dialog', d => d.accept());
+  const clearG = async () => { await g.click('#reset'); await g.waitForTimeout(450); };
   await g.goto(base + '/index.html');
   await g.selectOption('#condition', 'UTI / Dysuria');
   await g.fill('#pc0', 'burning on passing urine');
@@ -271,6 +272,27 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   await g.waitForTimeout(1500);
   check('Applying a suggestion corrects the note', !(await g.inputValue('#output')).includes('of of'));
   check('Check wording sends nothing off the device', leaving.length === 0, leaving.join(', '));
+
+  // 18. Read observations from a photo, on the device (fictional test images)
+  const fx = f => path.join(__dirname, 'fixtures', f);
+  const readPhoto = async f => { await g.setInputFiles('#photo-file', fx(f)); await g.waitForSelector('#photo-panel .actions button', { timeout: 120000 }); };
+  const photoVals = () => g.$$eval('.photo-row', rs => Object.fromEntries(rs.map(r => [r.querySelector('label').textContent.trim(), r.querySelector('input[type=number]')?.value || r.querySelector('.photo-unit')?.textContent])));
+  await clearG();
+  await readPhoto('triage-photo-fictional.jpg');
+  let pv = await photoVals();
+  check('Photo: reads BP, HR, RR, SpO₂, temperature and room air from a skewed, blurred photo', pv.SBP === '142' && pv.DBP === '88' && pv.HR === '104' && pv.RR === '22' && pv['SpO₂'] === '91' && pv.Temperature === '38.4' && pv.Oxygen === 'Room air', JSON.stringify(pv));
+  await g.click('#photo-fill'); await g.waitForTimeout(500);
+  check('Photo: Fill observations puts the values in the note and discards the photo', /BP 142\/88 mmHg\. HR 104 \/min\. RR 22 \/min\. SpO₂ 91 %\. Temperature 38\.4 °C\. Room air/.test(await g.inputValue('#output')) && (await g.locator('#photo-panel > *').count()) === 0);
+  await readPhoto('fahrenheit-fictional.png');
+  pv = await photoVals();
+  check('Photo: converts °F and reads nasal cannula oxygen', pv.Temperature === '38.5' && pv['SpO₂'] === '95' && /Nasal cannula, 2 L\/min/.test(pv.Oxygen), JSON.stringify(pv));
+  await g.locator('#photo-panel .actions button', { hasText: 'Discard' }).click();
+  await readPhoto('flowsheet-photo-fictional.jpg');
+  await g.locator('.photo-sets button', { hasText: '2nd' }).click();
+  pv = await photoVals();
+  check('Photo: a flowsheet\'s second reading switches every value together', pv.SBP === '128' && pv.DBP === '80' && pv.HR === '96' && pv['SpO₂'] === '94' && pv.Temperature === '37.9', JSON.stringify(pv));
+  await g.locator('#photo-panel .actions button', { hasText: 'Discard' }).click();
+  check('Photo: nothing leaves the device', leaving.length === 0, leaving.join(', '));
   server.close();
 
   // Version 50: form safety and accessibility
@@ -289,6 +311,51 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   await page.fill('#e1-v-hr', '99'); await settle();
   check('Correcting it clears the flag and resumes the note', !(await page.locator('#e1-v-hr-err').count()) && /HR 99 \/min/.test(await note()));
   await clear();
+
+  // Version 52: Hypoxia presentation
+  await page.selectOption('#condition', 'Hypoxia'); await settle();
+  await page.fill('#pc0', 'low oxygen saturations');
+  await page.locator('#fields label:visible, #fields button:visible', { hasText: 'Over hours' }).first().click();
+  await page.locator('#fields label:visible, #fields button:visible', { hasText: 'COPD' }).first().click();
+  await page.locator('#exam label:visible', { hasText: 'Good oximeter waveform' }).first().click();
+  await settle();
+  const hyp = await note();
+  check('Hypoxia: history and oximeter findings read correctly', /The onset was over hours\. Known conditions include COPD\./.test(hyp) && /Good oximeter waveform/.test(hyp), hyp);
+  check('Hypoxia: bedside reminder covers CO₂ retention targets and oximeter limits', await page.evaluate(() => /88–92%/.test(document.getElementById('exam').textContent) && /darker skin/.test(document.getElementById('exam').textContent)));
+  await clear();
+
+  // Version 52: scores
+  const sres = (k, v) => page.evaluate(([k, v]) => { const S = window.edScores; S.state[k] = { values: { ...v }, touched: new Set(S.SCORES[k].items.map(i => i.k)) }; return S.result(k).text; }, [k, v]);
+  const sc = [
+    ['NEWS2 boundaries', await sres('news2', { rr: '25', scale: 0, o2: 1, spo2: '93', sbp: '90', hr: '131', acvpu: 1, temp: '39.1' }), /^NEWS2 18 \(RR 3, air or oxygen 2, SpO₂ 2, SBP 3, pulse 3, consciousness 3, temperature 2\): high/],
+    ['NEWS2 scale 2 on oxygen', await sres('news2', { rr: '16', scale: 1, o2: 1, spo2: '97', sbp: '120', hr: '72', acvpu: 0, temp: '36.8' }), /^NEWS2 5 .*SpO₂ 3, .*: medium clinical risk band/],
+    ['HEART', await sres('heart', { h: 1, e: 1, a: '64', r: 1, t: 1 }), /^HEART 5\/10 .*moderate risk band \(4–6\)/],
+    ['Wells PE', await sres('wellspe', { dvt: true, hr: true }), /^Wells PE 4\.5\/12\.5 .*PE likely/],
+    ['PERC', await sres('perc', {}), /^PERC negative/],
+    ['Wells DVT', await sres('wellsdvt', { tend: true, alt: true }), /^Wells DVT −1\/9|^Wells DVT -1\/9/],
+    ['CURB-65 and CRB-65', (await sres('curb65', { c: true, u: 2, r: true, b: true, a: true })) + (await sres('curb65', { u: 0, a: true })), /^CURB-65 5\/5 .*high severity.*CRB-65 1\/4 .*intermediate/],
+    ['GCS', await sres('gcs', { e: 1, v: 1, m: 0 }), /^GCS 13\/15 \(E3 V4 M6\)/],
+    ['Glasgow-Blatchford (BUN and g/L)', await sres('gbs', { urea: '25', urea_unit: 1, sex: 1, hb: '110', hb_unit: 1, sbp: '120' }), /^Glasgow-Blatchford 4\/23 \(urea 3, Hb 1, SBP 0\)/],
+    ['McIsaac', await sres('mcisaac', { ex: true, node: true, temp: true, cough: true, age: '50' }), /^McIsaac score 3 .*28–35%/],
+    ['qSOFA', await sres('qsofa', { rr: '22', mental: 0, sbp: '100' }), /^qSOFA 2\/3/],
+    ['4AT', await sres('fourat', { alert: 0, amt: 1, att: 1, acute: 1 }), /^4AT 6\/12 .*possible delirium/]
+  ];
+  const scBad = sc.filter(([, t, re]) => !re.test(t));
+  check('Scores give the published totals and bands (12 worked cases)', scBad.length === 0, scBad.map(([n, t]) => n + ': ' + t).join(' | '));
+  await clear();
+  await page.selectOption('#condition', 'Chest pain'); await settle();
+  await page.fill('#age', '58'); await page.fill('#e1-v-hr', '112'); await settle();
+  await page.locator('#score-suggest button', { hasText: 'HEART' }).click();
+  check('Scores: age is filled from the page and an incomplete score cannot be added', await page.inputValue('#sc-heart-a') === '58' && await page.isDisabled('#score-add'));
+  for (const [k, i] of [['h', 1], ['e', 0], ['r', 1], ['t', 0]]) await page.locator('input[name="sc-heart-' + k + '"]').nth(i).check({ force: true });
+  await page.click('#score-add'); await settle();
+  check('Scores: an added score appears under SCORES in the note', /\n\nSCORES:\nHEART 3\/10 \(history 1, ECG 0, age 1, risk factors 1, troponin 0\): low risk band \(0–3\)\./.test(await note()), await note());
+  await page.fill('#age', '66'); await settle();
+  check('Scores: a changed input flags the note version as out of date', /earlier version/.test(await page.textContent('#score-result')));
+  await page.click('#score-add'); await settle();
+  check('Scores: Update in note replaces the line', /HEART 4\/10/.test(await note()) && !/HEART 3\/10/.test(await note()));
+  await clear();
+  check('Scores: Clear encounter removes scores', (await page.locator('#score-added li').count()) === 0 && !/SCORES/.test(await note()));
 
   check('No script errors', errors.length === 0, errors.join(' | '));
   await browser.close();

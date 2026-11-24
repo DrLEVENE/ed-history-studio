@@ -1,4 +1,4 @@
-# ED History Studio — version 51
+# ED History Studio — version 52
 
 Open index.html directly in a browser, or use the live site. No build or dependency installation is needed to run it.
 
@@ -25,3 +25,9 @@ Version 48: observations (vital signs) live in the Observations card at the top 
 Version 50: an IIFE at the end of app.js sets autocomplete="off" and inputmode="decimal" on every field (a MutationObserver reapplies it to fields built later), names each "Add detail" button, and shows inline .fielderr messages with aria-invalid for out-of-range age and vital signs (the note still pauses, as before). styles.css adds scroll-padding-bottom on phones so focused fields clear the fixed bottom bar. Version 49 (blue glass theme) was withdrawn at Dr Levene's request; keep the current look unless he asks for a change.
 
 Version 51: phone feel per Emil Kowalski's mobile-native and animation rules. Every :hover rule is wrapped in @media(hover:hover) and (pointer:fine) in place (not moved, so selected-state rules after it still win). html has overscroll-behavior-y:none (stops pull-to-refresh wiping an encounter), no tap highlight, no smooth scrolling; jumps use behavior 'auto'; the card reveal was removed. Press feedback is scale(.97) with a 120 ms strong ease-out. Keep new hover rules inside that media query.
+
+Version 52:
+- Hypoxia uses addBedsideChecklist like the other newer presentations (app.js, before complaintExamSystems).
+- scores.js holds the 11 scores as data: items are choice, check or num, with optional auto() from the page. result() builds the note line. window.edScoreLines() feeds a SCORES section in generate(), and window.edScoresClear() is called from Clear encounter. Values filled from the page update in place (syncPanel), never by rebuilding the panel: a rebuild on blur swallowed taps on "Update in note".
+- photo.js loads vendor/tesseract on demand (fetched by .github/workflows/vendor-tesseract.yml) and runs two passes (sparse and block). parse() handles labelled values, flowsheet tables, °F and oxygen. The test images in tests/fixtures are fictional.
+- Clinical content for Hypoxia, and the choice and wording of score bands, still need clinical review.

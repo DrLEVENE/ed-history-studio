@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 52 — 24 November 2026
+- New presentation: Hypoxia. History (how the low SpO₂ was found, onset, usual SpO₂ or target range, home oxygen or ventilation, lung and heart disease, previous CO₂ retention, VTE risk factors, exposures including indoor fuel-burning heaters), 21 associated symptoms, and examination prompts for confirming the oximeter reading, work of breathing, colour, CO₂ retention, and heart failure and VTE signs. The bedside reminder covers the BTS oxygen targets (94–98%, or 88–92% if at risk of CO₂ retention) and oximeter limits (darker skin, carbon monoxide). Needs clinical review.
+- New Scores card with 11 published scores: NEWS2, qSOFA, GCS, HEART, Wells PE, PERC, Wells DVT, CURB-65 (CRB-65 when urea is not available), Centor with McIsaac age adjustment, Glasgow-Blatchford, and 4AT. Suggested scores change with the presentation. Age and observations are filled in for checking. A score cannot be added until every item is answered, and goes into the note under SCORES only when added. If an input changes afterwards, the card says the note has an earlier version. Each score shows its published band and source, and says the band is not a recommendation. The calculations were checked against 41 worked cases, including every NEWS2 boundary.
+- New "Read obs from a photo" in Observations. A photo or screenshot of the triage observations is read on this device by Tesseract.js (Apache-2.0, copied into vendor/tesseract; about 7 MB, downloaded on first use). Nothing is uploaded or saved, and the photo is discarded when the panel closes. Every value is shown beside the photo to check, and only ticked values fill the observations. It reads labelled values and flowsheet tables, °F (converted to °C), room air and oxygen devices. When a photo holds several sets of readings, one switch moves every value to the same set. GCS, glucose, pain and weight are listed but not filled. Tested on fictional screenshots, a dark-mode screen, a skewed and blurred phone photo, and a flowsheet table. Not tested on handwriting, which it is unlikely to read reliably.
+- Copy section now includes Scores.
+- 13 new automated checks (65 in total).
+
 ## Version 51 — 24 November 2026
 Phone feel, checked against Emil Kowalski's skills (mobile-native, review-animations, break-ui; MIT licence). The look at rest is unchanged: the phone view is pixel-identical to version 50.
 - Pulling down at the top of the page no longer triggers the browser's pull-to-refresh, which reloaded the page and wiped the encounter.
