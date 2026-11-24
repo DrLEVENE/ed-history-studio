@@ -225,3 +225,31 @@ button,summary,.quick-options label{-webkit-user-select:none;user-select:none;-w
 .score-list-actions{display:flex;gap:6px;flex:none}
 .score-checkhead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:4px 0 8px}
 .score-crit{margin-bottom:10px}
+/* Version 54: lab reader, paste, AI diagnosis support */
+.reader-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0}
+.paste-zone{margin-top:8px;min-height:56px;padding:14px;border:2px dashed var(--rule);border-radius:10px;color:var(--muted);font-size:14px;outline:none;caret-color:transparent}
+.paste-zone:empty::before{content:attr(data-placeholder)}
+.paste-zone:focus{border-color:var(--teal)}
+#labs-msg:empty{display:none}
+#labs-panel:not(:empty){margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)}
+#labs-kept:not(:empty){margin-top:14px}
+.labs-flag{font-size:13px;font-weight:600;min-width:34px}
+.labs-flag[data-flag=high],.labs-flag[data-flag=low]{color:var(--abn-on)}
+.labs-range{flex-basis:100%;font-size:12.5px;color:var(--muted)}
+.score-list li.labs-abn span:first-child{color:var(--abn-on)}
+#ai-status:empty{display:none}
+#ai-out:not(:empty){margin-top:12px}
+#ai-preview{font-size:13px;line-height:1.45}
+.ai-dx{padding:12px 14px;margin:0 0 10px;border:1px solid var(--rule);border-radius:10px;background:var(--paper)}
+.ai-dx h3{font-size:15px;margin:0 0 6px}
+.ai-lk{font-size:12px;font-weight:600;color:var(--teal);white-space:nowrap}
+.ai-sub{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-top:6px}
+.ai-dx ul,.ai-list ul{margin:2px 0 0;padding-left:18px;font-size:13.5px;line-height:1.45}
+.ai-mnm{border-color:var(--abn-on)}
+.ai-mnm-row{border-top:1px solid var(--rule);padding-top:6px;margin-top:6px}
+.ai-mnm-row p{margin:0;font-size:13.5px}
+.ai-tick{margin-top:6px}
+.ai-stale{padding:10px 12px;border-left:3px solid var(--abn-on);background:var(--abn);border-radius:0 8px 8px 0;font-size:13.5px}
+.ai-settings{margin-top:14px}
+.ai-settings summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:600;font-size:14px}
+#ai-key-msg{margin-top:0}

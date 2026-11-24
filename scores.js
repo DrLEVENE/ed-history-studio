@@ -19,7 +19,8 @@
     const hist = ticked('#fields label'), exam = ticked('#exam label');
     const syms = {}; document.querySelectorAll('#symptoms .rapid-row').forEach(r => { const n = r.querySelector('span'), st = r.querySelector('input[type=hidden]'); if (n && st) syms[n.textContent.trim()] = st.value; });
     const yn = name => syms[name] === 'present' ? true : syms[name] === 'absent' ? false : null;
-    return { yn, hist: t => hist.has(t), exam: t => exam.has(t), age: years, hr: num(v('hr')), rr: num(v('rr')), sbp: num(v('sbp')), dbp: num(v('dbp')), spo2: num(v('spo2')), temp: num(v('temp')),
+    const lab = k => (window.edLabs ? window.edLabs.get(k) : null);
+    return { lab, yn, hist: t => hist.has(t), exam: t => exam.has(t), age: years, hr: num(v('hr')), rr: num(v('rr')), sbp: num(v('sbp')), dbp: num(v('dbp')), spo2: num(v('spo2')), temp: num(v('temp')),
       oxygen: ox === 'Room air' ? 'air' : ox ? 'oxygen' : null, sex: $('sex') ? $('sex').value : '' };
   }
 
@@ -79,7 +80,9 @@
         { k: 'a', label: 'Age', kind: 'num', unit: 'years', min: 0, max: 130, auto: c => c.age == null ? null : Math.floor(c.age), pts: v => v < 45 ? 0 : v < 65 ? 1 : 2, show: 'age' },
         { k: 'r', label: 'Risk factors', kind: 'choice', hint: 'Risk factors: hypercholesterolaemia, hypertension, diabetes, smoking (current or stopped within 3 months), obesity (BMI over 30), family history of premature coronary disease. Atherosclerotic disease: previous MI, PCI or CABG, stroke or TIA, peripheral arterial disease.',
           opts: [['No known risk factors', 0], ['1 or 2 risk factors', 1], ['3 or more risk factors, or known atherosclerotic disease', 2]], show: 'risk factors' },
-        { k: 't', label: 'Initial troponin', kind: 'choice', opts: [['At or below the normal limit', 0], ['1 to 3 times the normal limit', 1], ['More than 3 times the normal limit', 2]], show: 'troponin' }
+        { k: 't', label: 'Initial troponin', kind: 'choice', opts: [['At or below the normal limit', 0], ['1 to 3 times the normal limit', 1], ['More than 3 times the normal limit', 2]], show: 'troponin',
+          hint: 'Filled from Investigations only when the report gives the assay upper limit.',
+          auto: c => { const t = c.lab('trop'); if (!t || !t.uln) return null; const r = t.value / t.uln; return r <= 1 ? 0 : r <= 3 ? 1 : 2; } }
       ],
       max: 10,
       band: t => t <= 3 ? 'low risk band (0–3)' : t <= 6 ? 'moderate risk band (4–6)' : 'high risk band (7–10)'
@@ -138,7 +141,8 @@
       source: 'Lim et al., Thorax 2003; British Thoracic Society CAP guideline 2009',
       items: [
         { k: 'c', label: 'New confusion', kind: 'check', pts: 1, auto: c => c.exam('Confused') || c.yn('New confusion') },
-        { k: 'u', label: 'Urea', kind: 'choice', opts: [['Not available: score as CRB-65', 'NA'], ['7 mmol/L or less', 0], ['Over 7 mmol/L (BUN over 19 mg/dL)', 1]], show: 'urea' },
+        { k: 'u', label: 'Urea', kind: 'choice', opts: [['Not available: score as CRB-65', 'NA'], ['7 mmol/L or less', 0], ['Over 7 mmol/L (BUN over 19 mg/dL)', 1]], show: 'urea',
+          auto: c => { const u = c.lab('urea'); return u ? (u.si > 7 ? 2 : 1) : null; } },
         { k: 'r', label: 'Respiratory rate 30 or more', kind: 'check', pts: 1, auto: c => c.rr == null ? null : c.rr >= 30 },
         { k: 'b', label: 'Systolic BP below 90 or diastolic 60 or less', kind: 'check', pts: 1, auto: c => c.sbp == null || c.dbp == null ? null : (c.sbp < 90 || c.dbp <= 60) },
         { k: 'a', label: 'Age 65 or over', kind: 'check', pts: 1, auto: c => c.age == null ? null : c.age >= 65 }
@@ -162,9 +166,11 @@
       source: 'Blatchford et al., Lancet 2000; ESGE guideline 2021',
       items: [
         { k: 'urea', label: 'Urea', kind: 'num', units: [['mmol/L', 1], ['BUN mg/dL', 1 / 2.8]], min: 0, max: 150, show: 'urea',
+          auto: c => { const u = c.lab('urea'); return u ? Math.round(u.si * 10) / 10 : null; },
           pts: v => v < 6.5 ? 0 : v < 8 ? 2 : v < 10 ? 3 : v < 25 ? 4 : 6 },
         { k: 'sex', label: 'Sex (for haemoglobin points)', kind: 'choice', opts: [['Male', 'M'], ['Female', 'F']], auto: c => c.sex === 'Male' ? 0 : c.sex === 'Female' ? 1 : null, show: null },
         { k: 'hb', label: 'Haemoglobin', kind: 'num', units: [['g/dL', 1], ['g/L', 0.1]], min: 1, max: 25, show: 'Hb',
+          auto: c => { const h = c.lab('hb'); return h ? Math.round(h.si * 10) / 10 : null; },
           pts: (v, s) => s.sex === 1 ? (v >= 12 ? 0 : v >= 10 ? 1 : 6) : (v >= 13 ? 0 : v >= 12 ? 1 : v >= 10 ? 3 : 6) },
         { k: 'sbp', label: 'Systolic BP', kind: 'num', unit: 'mmHg', min: 1, max: 400, auto: c => c.sbp, pts: v => v < 90 ? 3 : v < 100 ? 2 : v < 110 ? 1 : 0, show: 'SBP' },
         { k: 'hr', label: 'Pulse 100 or more', kind: 'check', pts: 1, auto: c => c.hr == null ? null : c.hr >= 100 },
@@ -215,6 +221,7 @@
         if (a == null) delete s.values[it.k];
         else if (it.kind === 'check') s.values[it.k] = !!a;
         else s.values[it.k] = it.kind === 'num' ? String(a) : a;
+        if (a != null && it.units && !s.touched.has(it.k)) s.values[it.k + '_unit'] = 0;
       }
       const val = s.values[it.k];
       if (it.kind === 'check') { if (val == null) { missing.push(lowerFirst(it.label)); continue; } pts[it.k] = val ? it.pts : 0; sel[it.k] = !!val; continue; }

@@ -1,7 +1,7 @@
 // Keeps a copy of the page files so the tool opens without a connection.
 // Network first: when online you always get the latest version; the copy is used only offline.
-const CACHE = 'ed-history-v53';
-const FILES = ['./', './index.html', './styles.css', './app.js', './grammar.js', './scores.js', './photo.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './favicon.png'];
+const CACHE = 'ed-history-v54';
+const FILES = ['./', './index.html', './styles.css', './app.js', './grammar.js', './scores.js', './photo.js', './labs.js', './ai.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './favicon.png'];
 self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())));
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())));
 self.addEventListener('fetch', e => {

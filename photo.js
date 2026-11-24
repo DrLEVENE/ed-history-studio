@@ -103,7 +103,7 @@
   }
 
   // ---------- Recognition ----------
-  let loading = null;
+  let loading = null, lastUnsure = new Set();
   function loadTesseract() {
     if (window.Tesseract) return Promise.resolve(window.Tesseract);
     if (loading) return loading;
@@ -141,10 +141,15 @@
     try {
       const canvas = await prepare(blob);
       await worker.setParameters({ tessedit_pageseg_mode: '11', preserve_interword_spaces: '1' });
-      const sparse = (await worker.recognize(canvas)).data.text;
+      const a = (await worker.recognize(canvas)).data;
       await worker.setParameters({ tessedit_pageseg_mode: '3' });
-      const block = (await worker.recognize(canvas)).data.text;
-      return block + '\n' + sparse;
+      const b = (await worker.recognize(canvas)).data;
+      // Numbers the reader was not confident about, from either pass. Reviews leave these unticked.
+      const words = d => d.words || (d.blocks || []).flatMap(bl => (bl.paragraphs || []).flatMap(pa => (pa.lines || []).flatMap(li => li.words || [])));
+      const unsure = new Set();
+      [a, b].forEach(d => words(d).forEach(w => { if (/\d/.test(w.text) && w.confidence < 80) (w.text.match(/\d+(?:[.,]\d+)?/g) || []).forEach(n => unsure.add(String(Number(n.replace(',', '.'))))); }));
+      lastUnsure = unsure;
+      return b.text + '\n' + a.text;
     } finally { await worker.terminate(); }
   }
 
@@ -216,6 +221,7 @@
       const u = document.createElement('span'); u.className = 'photo-unit'; u.textContent = unit;
       const notes = [];
       if (!ok) notes.push('outside ' + lo + '–' + hi + ', not ticked');
+      if (ok && lastUnsure.has(String(v))) { cb.checked = false; notes.push('unclear in the image: check it, then tick'); }
       if (r.notes[k]) notes.push(r.notes[k]);
       if (current && current !== String(v)) notes.push('replaces ' + current);
       row.append(lab, inp, u);
@@ -273,5 +279,38 @@
   file.onchange = () => { const f = file.files && file.files[0]; if (f) run(f); };
   $('reset').addEventListener('click', () => setTimeout(() => { if (!panel.children.length) return; close(); }, 0));
 
+  // Pasting a screenshot: from the clipboard button, or by pasting into the page while the reader is in focus.
+  async function clipboardImage() {
+    if (!navigator.clipboard || !navigator.clipboard.read) throw new Error('This browser cannot read pasted images from a button. Tap the box below and choose Paste, or press Ctrl+V or ⌘V.');
+    const items = await navigator.clipboard.read();
+    for (const it of items) { const t = it.types.find(x => x.startsWith('image/')); if (t) return it.getType(t); }
+    throw new Error('There is no image on the clipboard. Copy the screenshot first.');
+  }
+  function pastedImage(e) {
+    const items = e.clipboardData ? [...e.clipboardData.items] : [];
+    const it = items.find(x => x.kind === 'file' && x.type.startsWith('image/'));
+    return it ? it.getAsFile() : null;
+  }
+  // A paste box and button for a reader. onImage(blob) runs the reader; onText(text) is optional.
+  function pasteSupport(button, zone, msg, onImage, onText) {
+    button.onclick = async () => {
+      msg.textContent = '';
+      try { onImage(await clipboardImage()); }
+      catch (e) { msg.textContent = (e && e.name === 'NotAllowedError') ? 'Pasting was not allowed. Tap the box below and choose Paste, or press Ctrl+V or ⌘V.' : (e && e.message) || 'Could not paste.'; zone.hidden = false; zone.focus(); }
+    };
+    zone.addEventListener('paste', e => {
+      const img = pastedImage(e); e.preventDefault(); zone.textContent = '';
+      if (img) { msg.textContent = ''; onImage(img); return; }
+      const text = e.clipboardData && e.clipboardData.getData('text/plain');
+      if (text && onText) { msg.textContent = ''; onText(text); return; }
+      msg.textContent = 'That was not an image. Copy a screenshot of the results, then paste.';
+    });
+    zone.addEventListener('beforeinput', e => { if (e.inputType !== 'insertFromPaste') e.preventDefault(); });
+  }
+
+  const pbtn = $('photo-paste'), pzone = $('photo-paste-zone');
+  if (pbtn && pzone) pasteSupport(pbtn, pzone, $('photo-done'), blob => { pzone.hidden = true; run(blob); });
+
   window.edPhoto = { parse, run };
+  window.edOCR = { recognise, pasteSupport, unsure: () => lastUnsure };
 })();

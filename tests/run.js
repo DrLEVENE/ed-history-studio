@@ -281,6 +281,9 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   await readPhoto('triage-photo-fictional.jpg');
   let pv = await photoVals();
   check('Photo: reads BP, HR, RR, SpO₂, temperature and room air from a skewed, blurred photo', pv.SBP === '142' && pv.DBP === '88' && pv.HR === '104' && pv.RR === '22' && pv['SpO₂'] === '91' && pv.Temperature === '38.4' && pv.Oxygen === 'Room air', JSON.stringify(pv));
+  const unclear = await g.$$eval('.photo-row', rs => rs.filter(r => /unclear in the image/.test(r.textContent)).map(r => r.querySelector('label').textContent.trim()));
+  check('Photo: values the reader was unsure of are left unticked for checking', await g.$$eval('.photo-row', rs => rs.every(r => !/unclear in the image/.test(r.textContent) || !r.querySelector('input[type=checkbox]').checked)), unclear.join(', '));
+  for (const cb of await g.$$('.photo-row input[type=checkbox]')) await cb.check();
   await g.click('#photo-fill'); await g.waitForTimeout(500);
   check('Photo: Fill observations puts the values in the note and discards the photo', /BP 142\/88 mmHg\. HR 104 \/min\. RR 22 \/min\. SpO₂ 91 %\. Temperature 38\.4 °C\. Room air/.test(await g.inputValue('#output')) && (await g.locator('#photo-panel > *').count()) === 0);
   await readPhoto('fahrenheit-fictional.png');
@@ -293,6 +296,58 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   check('Photo: a flowsheet\'s second reading switches every value together', pv.SBP === '128' && pv.DBP === '80' && pv.HR === '96' && pv['SpO₂'] === '94' && pv.Temperature === '37.9', JSON.stringify(pv));
   await g.locator('#photo-panel .actions button', { hasText: 'Discard' }).click();
   check('Photo: nothing leaves the device', leaving.length === 0, leaving.join(', '));
+
+  // 19. Labs: image, photo safeguards, pasted text, links to scores (fictional reports)
+  await clearG();
+  await g.selectOption('#condition', 'Cough / Cold / Flu'); await g.fill('#age', '70');
+  const readLabs = async f => { await g.setInputFiles('#labs-file', fx(f)); await g.waitForSelector('#labs-panel .actions button', { timeout: 120000 }); };
+  const labRows = () => g.$$eval('.labs-review .photo-row', rs => Object.fromEntries(rs.map(r => [r.querySelector('label').textContent.trim(), { v: r.querySelector('input[type=number]').value, flag: r.querySelector('.labs-flag').textContent, on: r.querySelector('input[type=checkbox]').checked, warn: r.querySelector('.photo-note').textContent }])));
+  await readLabs('lab-report-fictional.png');
+  let lr = await labRows();
+  const want = { Hb: ['112', 'Low'], WCC: ['14.2', 'High'], neutrophils: ['11.8', 'High'], platelets: ['250', ''], Na: ['133', 'Low'], K: ['4.1', ''], urea: ['9.1', 'High'], creatinine: ['112', 'High'], CRP: ['87', 'High'], troponin: ['45', 'High'], lactate: ['2.8', 'High'] };
+  const labBad = Object.entries(want).filter(([n, [v, f]]) => !lr[n] || lr[n].v !== v || lr[n].flag !== f).map(([n]) => n + '=' + JSON.stringify(lr[n]));
+  check('Labs: reads 11 results with correct high and low flags from a report image', labBad.length === 0, labBad.join(' | '));
+  await g.click('#labs-add'); await g.waitForTimeout(500);
+  const ln = await g.inputValue('#output');
+  check('Labs: results go into the note under INVESTIGATIONS, grouped', /INVESTIGATIONS:\nFBC: Hb 112 g\/L \(low\), WCC 14\.2 ×10⁹\/L \(high\), neutrophils 11\.8 ×10⁹\/L \(high\), platelets 250 ×10⁹\/L\.\nU&E: Na 133 mmol\/L \(low\), K 4\.1 mmol\/L, urea 9\.1 mmol\/L \(high\), creatinine 112 µmol\/L \(high\)\./.test(ln) && /Cardiac: troponin 45 ng\/L \(high\) \(assay upper limit 34\)\./.test(ln), ln.slice(ln.indexOf('INVESTIGATIONS')));
+  check('Labs: urea from the report answers CURB-65', await g.evaluate(() => window.edScores.evaluate('curb65') && window.edScores.state.curb65.values.u === 2));
+  await readLabs('lab-photo-fictional.jpg');
+  lr = await labRows();
+  check('Labs: misread values in a blurred photo are left unticked with a reason', lr.urea && !lr.urea.on && /unusual value/.test(lr.urea.warn) && lr.WCC && lr.WCC.on, JSON.stringify(lr.urea));
+  await g.locator('#labs-panel .actions button', { hasText: 'Discard' }).click();
+  await g.fill('#labs-text', 'pH 7.28  pCO2 7.9 kPa  HCO3 27  Glucose 6.2'); await g.click('#labs-textbtn'); await g.click('#labs-add'); await g.waitForTimeout(500);
+  check('Labs: pasted text is read too', /Gas: lactate 2\.8 mmol\/L \(high\), pH 7\.28 \(low\), pCO₂ 7\.9 kPa \(high\), HCO₃ 27 mmol\/L\./.test(await g.inputValue('#output')));
+  const shot = fs.readFileSync(fx('lab-report-fictional.png')).toString('base64');
+  await g.evaluate(b64 => { const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0)); const dt = new DataTransfer(); dt.items.add(new File([bin], 'shot.png', { type: 'image/png' })); const z = document.getElementById('labs-paste-zone'); z.hidden = false; z.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true })); }, shot);
+  await g.waitForSelector('#labs-panel .actions button', { timeout: 120000 });
+  check('Labs: a pasted screenshot is read', (await g.locator('.labs-review .photo-row').count()) >= 10);
+  await g.locator('#labs-panel .actions button', { hasText: 'Discard' }).click();
+  check('Labs: nothing leaves the device', leaving.length === 0, leaving.join(', '));
+
+  // 20. Diagnosis support (Anthropic API mocked; no real key or request)
+  await clearG();
+  const apiCalls = [];
+  await g.route('https://api.anthropic.com/**', r => { apiCalls.push({ h: r.request().headers(), b: JSON.parse(r.request().postData()) }); r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ model: 'claude-sonnet-5-5', content: [{ type: 'tool_use', id: 't', name: 'report_differential', input: {
+    diagnoses: [{ name: 'Acute coronary syndrome', likelihood: 'most likely', supporting: ['Central chest pain'], against: [], distinguish: ['Serial troponin'] }, { name: 'Pulmonary embolism', likelihood: 'possible', supporting: ['Tachycardia'], against: [], distinguish: ['CTPA'] }, { name: 'Gastro-oesophageal reflux', likelihood: 'possible', supporting: [], against: [], distinguish: [] }],
+    must_not_miss: [{ name: 'Aortic dissection', reason: 'Severe pain' }], missing_information: ['Risk factors'] } }] }) }); });
+  await g.selectOption('#condition', 'Chest pain'); await g.fill('#pc0', 'central chest pain'); await g.fill('#age', '58'); await g.fill('#e1-v-hr', '112');
+  await g.fill('#extra', 'Daughter on 876 555 1234, MRN 4471029, Mr John Testperson.'); await g.waitForTimeout(500);
+  await g.click('#ai-go');
+  check('Diagnosis: asks for a key first and sends nothing', /API key/.test(await g.textContent('#ai-status')) && apiCalls.length === 0);
+  await g.fill('#ai-key', 'test-key-local-only'); await g.click('#ai-key-save'); await g.click('#ai-go');
+  const pv2 = await g.inputValue('#ai-preview');
+  check('Diagnosis: shows exactly what will be sent, with identifiers removed, before sending', apiCalls.length === 0 && !/876 555 1234|4471029|John Testperson/.test(pv2) && /HR 112/.test(pv2), pv2);
+  await g.click('#ai-send'); await g.waitForSelector('.ai-dx', { timeout: 10000 });
+  const call = apiCalls[0] || { h: {}, b: {} };
+  check('Diagnosis: request uses the clinician\'s key, the forced tool and the shown text', call.h['x-api-key'] === 'test-key-local-only' && call.h['anthropic-dangerous-direct-browser-access'] === 'true' && call.b.tool_choice && call.b.tool_choice.name === 'report_differential' && call.b.messages[0].content.includes(pv2));
+  check('Diagnosis: nothing enters the note until ticked', !/IMPRESSION/.test(await g.inputValue('#output')) && (await g.locator('.ai-dx h3').count()) === 4);
+  await g.locator('.ai-dx').nth(0).locator('.ai-tick input').check(); await g.locator('.ai-mnm .ai-tick input').check(); await g.waitForTimeout(600);
+  check('Diagnosis: ticked diagnoses go under IMPRESSION', /\n\nIMPRESSION:\nDifferential: 1\. Acute coronary syndrome; 2\. Aortic dissection\./.test(await g.inputValue('#output')));
+  await g.fill('#age', '59'); await g.waitForTimeout(1200);
+  check('Diagnosis: warns when the note changes after the suggestions', (await g.locator('#ai-stale').count()) === 1);
+  await clearG();
+  check('Diagnosis: Clear encounter removes suggestions and the impression', (await g.locator('.ai-dx').count()) === 0 && !/IMPRESSION/.test(await g.inputValue('#output')));
+  await g.unroute('https://api.anthropic.com/**');
   server.close();
 
   // Version 50: form safety and accessibility

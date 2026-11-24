@@ -1,4 +1,4 @@
-# ED History Studio — version 53
+# ED History Studio — version 54
 
 Open index.html directly in a browser, or use the live site. No build or dependency installation is needed to run it.
 
@@ -33,3 +33,8 @@ Version 52:
 - Clinical content for Hypoxia, and the choice and wording of score bands, still need clinical review.
 
 Version 53: scores are live. included() = scores added by hand, plus (when #score-auto is ticked) SUGGEST[presentation] minus any the clinician removed. window.edScoreLines() returns only complete results, recomputed at every note build. context() exposes yn(symptom), hist(chip) and exam(chip) for item auto() functions. Check items are tri-state (true, false, unanswered); unanswered blocks completion. Keep it that way: an unticked box must never be read as "absent" in the note.
+
+Version 54:
+- labs.js: the analyte table A (aliases; units with SI factor and typical range), parse() line by line, consuming each match so several results can share a line. Short symbols (Na, K, Ca, Mg, Cr, PT, BE, CO2) are case-sensitive on purpose: "mg/dL" must not read as magnesium. PLAUSIBLE limits, report-flag disagreement, decimal repair of ranges, and Tesseract's word confidence (edOCR.unsure()) all leave a result unticked. kept{} feeds edLabLines() (INVESTIGATIONS) and edLabs.get() (scores).
+- ai.js: the only network call the site makes (api.anthropic.com, direct browser access with the doctor's own key). It forces the report_differential tool for structured output. deidentify() runs before the preview and the preview is editable. edImpression() feeds IMPRESSION with ticked names only.
+- Privacy statements now say "nothing leaves the device except Diagnosis support, when you send it". Keep the tests that assert no outside requests for every other feature.
