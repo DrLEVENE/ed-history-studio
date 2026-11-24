@@ -1,4 +1,4 @@
-# ED History Studio — version 49
+# ED History Studio — version 48
 
 Open index.html directly in a browser, or use the live site. No build or dependency installation is needed to run it.
 

@@ -1,9 +1,5 @@
 # Changelog
 
-## Version 49 — 23 November 2026
-- Blue and white "glass" look: frosted translucent panels over a soft blue background, a translucent top bar, blue gradient buttons and selected chips with a soft blue glow, and smooth hover lift on buttons and chips. Abnormal findings stay amber.
-- The theme is one block at the end of styles.css, so it can be removed in one step. No change to behaviour, clinical content or safeguards. Motion is switched off for devices set to reduce motion.
-
 ## Version 48 — 23 November 2026
 Faster at the bedside. No change to clinical content.
 - Observations moved to the top, under Patient, with an optional "Time seen" and a Now button. Vital signs now carry over when the presentation is changed. "TIME SEEN: hh:mm" heads the note when set.
