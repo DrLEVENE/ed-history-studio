@@ -15,7 +15,11 @@
     const a = num($('age') && $('age').value), unit = $('ageunit') ? $('ageunit').value : 'years';
     const years = a == null || a < 0 ? null : unit === 'years' ? a : unit === 'months' ? a / 12 : unit === 'weeks' ? a / 52.18 : a / 365.25;
     const ox = v('oxygen');
-    return { age: years, hr: num(v('hr')), rr: num(v('rr')), sbp: num(v('sbp')), dbp: num(v('dbp')), spo2: num(v('spo2')), temp: num(v('temp')),
+    const ticked = sel => new Set([...document.querySelectorAll(sel)].filter(l => l.querySelector('input:checked')).map(l => l.textContent.trim()));
+    const hist = ticked('#fields label'), exam = ticked('#exam label');
+    const syms = {}; document.querySelectorAll('#symptoms .rapid-row').forEach(r => { const n = r.querySelector('span'), st = r.querySelector('input[type=hidden]'); if (n && st) syms[n.textContent.trim()] = st.value; });
+    const yn = name => syms[name] === 'present' ? true : syms[name] === 'absent' ? false : null;
+    return { yn, hist: t => hist.has(t), exam: t => exam.has(t), age: years, hr: num(v('hr')), rr: num(v('rr')), sbp: num(v('sbp')), dbp: num(v('dbp')), spo2: num(v('spo2')), temp: num(v('temp')),
       oxygen: ox === 'Room air' ? 'air' : ox ? 'oxygen' : null, sex: $('sex') ? $('sex').value : '' };
   }
 
@@ -37,7 +41,8 @@
           } },
         { k: 'sbp', label: 'Systolic BP', kind: 'num', unit: 'mmHg', min: 1, max: 400, auto: c => c.sbp, pts: v => v < 91 ? 3 : v < 101 ? 2 : v < 111 ? 1 : v < 220 ? 0 : 3, show: 'SBP' },
         { k: 'hr', label: 'Pulse', kind: 'num', unit: '/min', min: 1, max: 400, auto: c => c.hr, pts: v => v < 41 ? 3 : v < 51 ? 1 : v < 91 ? 0 : v < 111 ? 1 : v < 131 ? 2 : 3, show: 'pulse' },
-        { k: 'acvpu', label: 'Consciousness', kind: 'choice', opts: [['Alert', 0], ['New confusion, or responds only to voice or pain, or unresponsive', 3]], show: 'consciousness' },
+        { k: 'acvpu', label: 'Consciousness', kind: 'choice', opts: [['Alert', 0], ['New confusion, or responds only to voice or pain, or unresponsive', 3]], show: 'consciousness',
+          auto: c => c.exam('Drowsy') || c.exam('Confused') || c.yn('New confusion') ? 1 : c.exam('Alert') ? 0 : null },
         { k: 'temp', label: 'Temperature', kind: 'num', unit: '°C', min: 20, max: 45, auto: c => c.temp, pts: v => v <= 35 ? 3 : v <= 36 ? 1 : v <= 38 ? 0 : v <= 39 ? 1 : 2, show: 'temperature' }
       ],
       band: (t, p) => t >= 7 ? 'high clinical risk band (7 or more)' : t >= 5 ? 'medium clinical risk band (5–6)'
@@ -48,7 +53,8 @@
       source: 'Seymour et al., JAMA 2016 (Sepsis-3)',
       items: [
         { k: 'rr', label: 'Respiratory rate', kind: 'num', unit: '/min', min: 1, max: 150, auto: c => c.rr, pts: v => v >= 22 ? 1 : 0, show: 'RR' },
-        { k: 'mental', label: 'Altered mentation (GCS below 15)', kind: 'choice', opts: [['No', 0], ['Yes', 1]], show: 'altered mentation' },
+        { k: 'mental', label: 'Altered mentation (GCS below 15)', kind: 'choice', opts: [['No', 0], ['Yes', 1]], show: 'altered mentation',
+          auto: c => c.exam('Drowsy') || c.exam('Confused') || c.yn('New confusion') ? 1 : c.exam('Alert') && c.exam('Orientated to person, place and time') ? 0 : null },
         { k: 'sbp', label: 'Systolic BP', kind: 'num', unit: 'mmHg', min: 1, max: 400, auto: c => c.sbp, pts: v => v <= 100 ? 1 : 0, show: 'SBP' }
       ],
       max: 3,
@@ -86,9 +92,9 @@
         { k: 'alt', label: 'PE is the most likely diagnosis, or equally likely', kind: 'check', pts: 3 },
         { k: 'hr', label: 'Heart rate over 100', kind: 'check', pts: 1.5, auto: c => c.hr == null ? null : c.hr > 100 },
         { k: 'imm', label: 'Immobilisation for 3 days or more, or surgery in the previous 4 weeks', kind: 'check', pts: 1.5 },
-        { k: 'prev', label: 'Previous DVT or PE', kind: 'check', pts: 1.5 },
-        { k: 'haem', label: 'Haemoptysis', kind: 'check', pts: 1 },
-        { k: 'ca', label: 'Malignancy (treatment within 6 months, or palliative)', kind: 'check', pts: 1 }
+        { k: 'prev', label: 'Previous DVT or PE', kind: 'check', pts: 1.5, auto: c => c.hist('Previous DVT or PE') || null },
+        { k: 'haem', label: 'Haemoptysis', kind: 'check', pts: 1, auto: c => c.yn('Haemoptysis') },
+        { k: 'ca', label: 'Malignancy (treatment within 6 months, or palliative)', kind: 'check', pts: 1, auto: c => c.hist('Active cancer') || null }
       ],
       max: 12.5,
       band: t => t > 4 ? 'PE likely (more than 4)' : 'PE unlikely (4 or less)'
@@ -101,11 +107,11 @@
         { k: 'age', label: 'Age 50 or over', kind: 'check', pts: 1, auto: c => c.age == null ? null : c.age >= 50 },
         { k: 'hr', label: 'Heart rate 100 or more', kind: 'check', pts: 1, auto: c => c.hr == null ? null : c.hr >= 100 },
         { k: 'sat', label: 'SpO₂ below 95% on room air', kind: 'check', pts: 1, auto: c => c.spo2 == null || c.oxygen !== 'air' ? null : c.spo2 < 95 },
-        { k: 'leg', label: 'Unilateral leg swelling', kind: 'check', pts: 1 },
-        { k: 'haem', label: 'Haemoptysis', kind: 'check', pts: 1 },
+        { k: 'leg', label: 'Unilateral leg swelling', kind: 'check', pts: 1, auto: c => c.yn('Unilateral leg swelling') },
+        { k: 'haem', label: 'Haemoptysis', kind: 'check', pts: 1, auto: c => c.yn('Haemoptysis') },
         { k: 'surg', label: 'Surgery or trauma needing hospital treatment in the previous 4 weeks', kind: 'check', pts: 1 },
-        { k: 'prev', label: 'Previous PE or DVT', kind: 'check', pts: 1 },
-        { k: 'horm', label: 'Hormone use (oral contraceptive, hormone replacement or oestrogen)', kind: 'check', pts: 1 }
+        { k: 'prev', label: 'Previous PE or DVT', kind: 'check', pts: 1, auto: c => c.hist('Previous DVT or PE') || null },
+        { k: 'horm', label: 'Hormone use (oral contraceptive, hormone replacement or oestrogen)', kind: 'check', pts: 1, auto: c => c.hist('Oestrogen therapy') || null }
       ],
       custom: true
     },
@@ -131,7 +137,7 @@
       name: 'CURB-65', title: 'CURB-65 for community-acquired pneumonia',
       source: 'Lim et al., Thorax 2003; British Thoracic Society CAP guideline 2009',
       items: [
-        { k: 'c', label: 'New confusion', kind: 'check', pts: 1 },
+        { k: 'c', label: 'New confusion', kind: 'check', pts: 1, auto: c => c.exam('Confused') || c.yn('New confusion') },
         { k: 'u', label: 'Urea', kind: 'choice', opts: [['Not available: score as CRB-65', 'NA'], ['7 mmol/L or less', 0], ['Over 7 mmol/L (BUN over 19 mg/dL)', 1]], show: 'urea' },
         { k: 'r', label: 'Respiratory rate 30 or more', kind: 'check', pts: 1, auto: c => c.rr == null ? null : c.rr >= 30 },
         { k: 'b', label: 'Systolic BP below 90 or diastolic 60 or less', kind: 'check', pts: 1, auto: c => c.sbp == null || c.dbp == null ? null : (c.sbp < 90 || c.dbp <= 60) },
@@ -146,7 +152,7 @@
         { k: 'ex', label: 'Tonsillar exudate or swelling', kind: 'check', pts: 1 },
         { k: 'node', label: 'Tender or swollen anterior cervical nodes', kind: 'check', pts: 1 },
         { k: 'temp', label: 'Temperature over 38 °C', kind: 'check', pts: 1, auto: c => c.temp == null ? null : c.temp > 38 },
-        { k: 'cough', label: 'Cough absent', kind: 'check', pts: 1 },
+        { k: 'cough', label: 'Cough absent', kind: 'check', pts: 1, auto: c => { const y = c.yn('Cough'); return y == null ? null : !y; } },
         { k: 'age', label: 'Age', kind: 'num', unit: 'years', min: 0, max: 130, auto: c => c.age == null ? null : Math.floor(c.age), pts: v => v < 15 ? 1 : v < 45 ? 0 : -1, show: 'age' }
       ],
       custom: true
@@ -162,8 +168,8 @@
           pts: (v, s) => s.sex === 1 ? (v >= 12 ? 0 : v >= 10 ? 1 : 6) : (v >= 13 ? 0 : v >= 12 ? 1 : v >= 10 ? 3 : 6) },
         { k: 'sbp', label: 'Systolic BP', kind: 'num', unit: 'mmHg', min: 1, max: 400, auto: c => c.sbp, pts: v => v < 90 ? 3 : v < 100 ? 2 : v < 110 ? 1 : 0, show: 'SBP' },
         { k: 'hr', label: 'Pulse 100 or more', kind: 'check', pts: 1, auto: c => c.hr == null ? null : c.hr >= 100 },
-        { k: 'mel', label: 'Melaena', kind: 'check', pts: 1 },
-        { k: 'sync', label: 'Presented with syncope', kind: 'check', pts: 2 },
+        { k: 'mel', label: 'Melaena', kind: 'check', pts: 1, auto: c => c.yn('Melaena') },
+        { k: 'sync', label: 'Presented with syncope', kind: 'check', pts: 2, auto: c => c.yn('Syncope') },
         { k: 'liver', label: 'Hepatic disease (known history, or clinical or laboratory evidence)', kind: 'check', pts: 2 },
         { k: 'cf', label: 'Cardiac failure', kind: 'check', pts: 2 }
       ],
@@ -197,6 +203,7 @@
     'Seizure': ['gcs'], 'Toxic ingestion': ['gcs', 'news2'], 'Behavioural change': ['fourat', 'gcs'], 'Suspected stroke': ['gcs'], 'Syncope': ['news2']
   };
 
+  const lowerFirst = t => /^[A-Z][a-z]+$/.test(t.split(/[\s(]/)[0]) ? t.charAt(0).toLowerCase() + t.slice(1) : t;
   const st = key => state[key] || (state[key] = { values: {}, touched: new Set() });
 
   // Fill untouched items from the page, then work out points.
@@ -210,7 +217,7 @@
         else s.values[it.k] = it.kind === 'num' ? String(a) : a;
       }
       const val = s.values[it.k];
-      if (it.kind === 'check') { pts[it.k] = val ? it.pts : 0; sel[it.k] = !!val; continue; }
+      if (it.kind === 'check') { if (val == null) { missing.push(lowerFirst(it.label)); continue; } pts[it.k] = val ? it.pts : 0; sel[it.k] = !!val; continue; }
       if (it.kind === 'choice') { if (val == null) { missing.push(it.label); continue; } sel[it.k] = val; pts[it.k] = it.opts[val][1]; continue; }
       const n = num(val), factor = it.units ? it.units[s.values[it.k + '_unit'] || 0][1] : 1;
       if (n == null) { missing.push(it.label); continue; }
@@ -222,14 +229,13 @@
     return { def, s, sel, pts, missing };
   }
 
-  const lowerFirst = t => /^[A-Z][a-z]/.test(t) ? t.charAt(0).toLowerCase() + t.slice(1) : t;
   const fmt = n => Number.isInteger(n) ? String(n) : String(Math.round(n * 10) / 10);
   const signed = n => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n));
 
   // Result sentence for the panel and the note. Returns {text, complete}.
   function result(key) {
     const r = evaluate(key), { def, s, pts } = r;
-    if (r.missing.length) return { complete: false, text: 'Answer: ' + r.missing.join('; ') + '.' };
+    if (r.missing.length) return { complete: false, missing: r.missing.length, text: r.missing.length <= 2 ? 'Still to answer: ' + r.missing.join('; ') + '.' : r.missing.length + ' items still to answer.' };
     const total = Object.values(pts).reduce((a, b) => a + (typeof b === 'number' ? b : 0), 0);
     const parts = def.items.filter(it => it.show).map(it => it.show + ' ' + fmt(pts[it.k]));
     if (key === 'gcs') {
@@ -263,13 +269,21 @@
   }
 
   // ---------- Interface ----------
+  // A score is in the note when it was added by hand, or (with automatic scores on) when it is suggested for the
+  // current presentation and has not been removed. Either way it appears only once every item is answered, and
+  // its line is rebuilt with the note, so it always matches the current answers.
   const card = $('scores-card');
   if (!card) return;
-  const pick = $('score-pick'), panel = $('score-panel'), suggest = $('score-suggest'), list = $('score-added');
+  const pick = $('score-pick'), panel = $('score-panel'), suggest = $('score-suggest'), list = $('score-added'), autoBox = $('score-auto');
   ORDER.forEach(k => pick.add(new Option(SCORES[k].title, k)));
+  const manual = new Set(), removed = new Set();
+  const suggested = () => SUGGEST[$('condition').value] || ['news2'];
+  const automatic = () => !autoBox || autoBox.checked;
+  const included = () => ORDER.filter(k => manual.has(k) || (automatic() && suggested().includes(k) && !removed.has(k)));
+  const fromPageTag = () => { const t = document.createElement('span'); t.className = 'score-from'; t.textContent = 'Filled from the page; check it'; return t; };
 
   function renderSuggest() {
-    const cond = $('condition').value, keys = SUGGEST[cond] || ['news2'];
+    const cond = $('condition').value, keys = suggested();
     suggest.replaceChildren();
     const lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.id = 'score-suggest-lbl'; lbl.textContent = 'Suggested for ' + cond;
     const row = document.createElement('div'); row.className = 'quick-options'; row.setAttribute('role', 'group'); row.setAttribute('aria-labelledby', lbl.id);
@@ -278,9 +292,7 @@
     suggest.append(lbl, row);
   }
 
-  function open(key) {
-    openKey = key; pick.value = key; renderSuggest(); renderPanel();
-  }
+  function open(key) { openKey = key; pick.value = key; renderSuggest(); renderPanel(); }
 
   function renderPanel() {
     panel.replaceChildren();
@@ -300,47 +312,56 @@
         it.opts.forEach(([text], i) => {
           const l = document.createElement('label'), inp = document.createElement('input');
           inp.type = 'radio'; inp.name = id; inp.value = String(i); inp.checked = s.values[it.k] === i;
-          inp.onchange = () => { s.values[it.k] = i; s.touched.add(it.k); update(); };
+          inp.onchange = () => { s.values[it.k] = i; s.touched.add(it.k); changed(); };
           l.append(inp, text); row.append(l);
         });
         wrap.append(lbl, row);
+        if (it.auto) wrap.append(fromPageTag());
         if (it.hint) { const p = document.createElement('p'); p.className = 'hint'; p.textContent = it.hint; wrap.append(p); }
       } else {
         const l = document.createElement('label'); l.className = 'score-num'; l.textContent = it.label + (it.unit ? ' (' + it.unit + ')' : '');
         const inp = document.createElement('input'); inp.type = 'number'; inp.step = 'any'; inp.id = id; inp.value = s.values[it.k] ?? '';
-        inp.oninput = () => { s.values[it.k] = inp.value; s.touched.add(it.k); update(); };
+        inp.oninput = () => { s.values[it.k] = inp.value; s.touched.add(it.k); changed(); };
         l.append(inp);
         if (it.units) {
           const u = document.createElement('select'); u.setAttribute('aria-label', it.label + ' unit');
           it.units.forEach(([t], i) => u.add(new Option(t, String(i)))); u.value = String(s.values[it.k + '_unit'] || 0);
-          u.onchange = () => { s.values[it.k + '_unit'] = Number(u.value); update(); };
+          u.onchange = () => { s.values[it.k + '_unit'] = Number(u.value); changed(); };
           l.append(u);
         }
-        if (it.auto) { const tag = document.createElement('span'); tag.className = 'score-from'; tag.textContent = 'Filled from the page; check it'; l.append(tag); }
+        if (it.auto) l.append(fromPageTag());
         wrap.append(l);
       }
       panel.append(wrap);
     });
     if (checks.length) {
-      const wrap = document.createElement('div'); wrap.className = 'score-item';
-      const lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.id = 'sc-' + openKey + '-checks'; lbl.textContent = openKey === 'perc' ? 'Criteria present' : 'Tick each criterion that is present';
-      const row = document.createElement('div'); row.className = 'quick-options score-checks'; row.setAttribute('role', 'group'); row.setAttribute('aria-labelledby', lbl.id);
+      const head = document.createElement('div'); head.className = 'score-checkhead';
+      const t = document.createElement('span'); t.className = 'lbl'; t.textContent = 'Criteria: answer each one';
+      const rest = document.createElement('button'); rest.type = 'button'; rest.className = 'secondary'; rest.id = 'score-rest'; rest.textContent = 'Mark the rest absent';
+      rest.onclick = () => { checks.forEach(it => { if (s.values[it.k] == null) { s.values[it.k] = false; s.touched.add(it.k); } }); syncChecks(); changed(); };
+      head.append(t, rest); panel.append(head);
+      if (checks.some(it => it.auto)) { const n = fromPageTag(); n.textContent = 'Some answers follow your symptoms, history and observations; check them.'; panel.append(n); }
       checks.forEach(it => {
-        const l = document.createElement('label'), inp = document.createElement('input'); inp.type = 'checkbox'; inp.checked = !!s.values[it.k]; inp.dataset.k = it.k;
-        inp.onchange = () => { s.values[it.k] = inp.checked; s.touched.add(it.k); update(); };
-        const pts = document.createElement('span'); pts.className = 'score-pts'; pts.textContent = openKey === 'perc' ? '' : ' ' + signed(it.pts);
-        l.append(inp, it.label, pts); if (it.auto) l.title = 'Filled from the page; check it'; row.append(l);
+        const wrap = document.createElement('div'); wrap.className = 'score-item score-crit';
+        const id = 'sc-' + openKey + '-' + it.k;
+        const lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.id = id + '-lbl'; lbl.textContent = it.label;
+        const row = document.createElement('div'); row.className = 'quick-options'; row.setAttribute('role', 'radiogroup'); row.setAttribute('aria-labelledby', lbl.id);
+        [[true, openKey === 'perc' ? 'Present' : 'Present (' + signed(it.pts) + ')'], [false, 'Absent']].forEach(([v, text]) => {
+          const l = document.createElement('label'), inp = document.createElement('input');
+          inp.type = 'radio'; inp.name = id; inp.value = String(v); inp.checked = s.values[it.k] === v;
+          inp.onchange = () => { s.values[it.k] = v; s.touched.add(it.k); changed(); };
+          l.append(inp, text); row.append(l);
+        });
+        wrap.append(lbl, row); panel.append(wrap);
       });
-      wrap.append(lbl, row); panel.append(wrap);
     }
     const out = document.createElement('p'); out.className = 'score-result'; out.id = 'score-result'; out.setAttribute('role', 'status');
     const actions = document.createElement('div'); actions.className = 'actions';
-    const add = document.createElement('button'); add.type = 'button'; add.id = 'score-add'; add.textContent = 'Add to note';
+    const add = document.createElement('button'); add.type = 'button'; add.id = 'score-add';
     add.onclick = () => {
-      const r = result(openKey); if (!r.complete) return;
-      const i = added.findIndex(a => a.key === openKey); const item = { key: openKey, text: r.text };
-      if (i >= 0) added[i] = item; else added.push(item);
-      renderAdded(); markDirty();
+      if (included().includes(openKey)) { manual.delete(openKey); removed.add(openKey); }
+      else { manual.add(openKey); removed.delete(openKey); }
+      changed();
     };
     const src = document.createElement('p'); src.className = 'hint'; src.textContent = 'Source: ' + def.source + '. The band is the published one; it is not a recommendation.';
     actions.append(add); panel.append(out, actions, src);
@@ -349,6 +370,7 @@
 
   // Refresh values filled from the page without rebuilding the panel, so a tap in progress still lands.
   function syncPanel() {
+    renderStatus();
     if (!openKey) return;
     const def = SCORES[openKey], s = st(openKey);
     evaluate(openKey);
@@ -357,53 +379,65 @@
       const id = 'sc-' + openKey + '-' + it.k;
       if (it.kind === 'num') { const e = $(id); if (e) e.value = s.values[it.k] ?? ''; }
       else if (it.kind === 'choice') document.querySelectorAll('input[name="' + id + '"]').forEach(r => { r.checked = s.values[it.k] === Number(r.value); });
-      else { const e = panel.querySelector('input[data-k="' + it.k + '"]'); if (e) e.checked = !!s.values[it.k]; }
     });
+    syncChecks();
     update();
+  }
+
+  function syncChecks() {
+    if (!openKey) return;
+    const s = st(openKey);
+    SCORES[openKey].items.filter(it => it.kind === 'check').forEach(it =>
+      document.querySelectorAll('input[name="sc-' + openKey + '-' + it.k + '"]').forEach(r => { r.checked = s.values[it.k] === (r.value === 'true'); }));
   }
 
   function update() {
     const out = $('score-result'), add = $('score-add');
     if (!out) return;
-    const r = result(openKey);
-    const inNote = added.find(a => a.key === openKey);
-    const stale = inNote && r.complete && inNote.text !== r.text;
-    out.textContent = r.text + (stale ? ' The note still has an earlier version: press Update in note.' : inNote && r.complete ? ' This is in the note.' : '');
-    out.classList.toggle('incomplete', !r.complete || !!stale);
-    add.disabled = !r.complete || (inNote && !stale);
-    add.textContent = inNote ? 'Update in note' : 'Add to note';
+    const r = result(openKey), inNote = included().includes(openKey);
+    out.textContent = r.text + (inNote ? (r.complete ? ' In the note.' : ' It goes into the note once every item is answered.') : '');
+    out.classList.toggle('incomplete', !r.complete);
+    add.disabled = false;
+    add.textContent = inNote ? 'Remove from note' : 'Add to note';
   }
 
-  function renderAdded() {
+  function renderStatus() {
     list.replaceChildren();
-    if (!added.length) return;
-    const lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.textContent = 'In the note';
+    const keys = included();
+    if (!keys.length) return;
+    const lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.textContent = 'Scores for the note';
     const ul = document.createElement('ul'); ul.className = 'score-list';
-    added.forEach((a, i) => {
-      const li = document.createElement('li'); const t = document.createElement('span'); t.textContent = a.text;
+    keys.forEach(k => {
+      const r = result(k), li = document.createElement('li'), t = document.createElement('span');
+      t.textContent = r.complete ? r.text : SCORES[k].name + ': not in the note yet. ' + r.text;
+      if (!r.complete) li.className = 'waiting';
+      const btns = document.createElement('span'); btns.className = 'score-list-actions';
+      if (!r.complete) { const o = document.createElement('button'); o.type = 'button'; o.className = 'secondary'; o.textContent = 'Answer';
+        o.setAttribute('aria-label', 'Answer ' + SCORES[k].name); o.onclick = () => { open(k); panel.scrollIntoView({ block: 'start' }); }; btns.append(o); }
       const b = document.createElement('button'); b.type = 'button'; b.className = 'secondary'; b.textContent = 'Remove';
-      b.setAttribute('aria-label', 'Remove ' + SCORES[a.key].name + ' from the note');
-      b.onclick = () => { added.splice(i, 1); renderAdded(); update(); markDirty(); };
-      li.append(t, b); ul.append(li);
+      b.setAttribute('aria-label', 'Remove ' + SCORES[k].name + ' from the note');
+      b.onclick = () => { manual.delete(k); removed.add(k); changed(); };
+      btns.append(b); li.append(t, btns); ul.append(li);
     });
     list.append(lbl, ul);
-    update();
   }
 
-  // Tell the page the encounter changed, so the live note rebuilds.
-  function markDirty() { card.dispatchEvent(new Event('change', { bubbles: true })); }
+  // Any change to the scores: refresh the card and tell the page, so the live note rebuilds.
+  function changed() { renderStatus(); update(); card.dispatchEvent(new Event('change', { bubbles: true })); }
 
   pick.onchange = () => open(pick.value);
-  $('condition').addEventListener('change', () => setTimeout(renderSuggest, 0));
-  // Keep filled-in values in step with the observations and age while a score is open.
-  const fromPage = e => openKey && e.target && e.target.id && /^(age|ageunit|sex)$|-v-/.test(e.target.id);
-  document.addEventListener('input', e => { if (fromPage(e)) syncPanel(); });
-  document.addEventListener('change', e => { if (fromPage(e)) syncPanel(); });
-  // Chips set the hidden sex select without an event of their own.
-  document.addEventListener('click', e => { if (openKey && e.target.closest && e.target.closest('#intro')) setTimeout(syncPanel, 0); });
+  if (autoBox) autoBox.onchange = () => { renderStatus(); update(); };
+  $('condition').addEventListener('change', () => setTimeout(() => { renderSuggest(); renderStatus(); update(); }, 0));
+  // Answers elsewhere on the page (observations, age, symptoms, history and exam chips) feed the scores.
+  const outside = e => e.target && e.target.closest && !e.target.closest('#scores-card') && e.target.closest('main');
+  let queued = false;
+  const later = () => { if (queued) return; queued = true; setTimeout(() => { queued = false; syncPanel(); }, 0); };
+  document.addEventListener('input', e => { if (outside(e)) later(); });
+  document.addEventListener('change', e => { if (outside(e)) later(); });
+  document.addEventListener('click', e => { if (outside(e)) later(); });
 
-  window.edScoreLines = () => added.map(a => a.text);
-  window.edScoresClear = () => { added.length = 0; for (const k in state) delete state[k]; open(''); renderAdded(); };
-  window.edScores = { SCORES, result, evaluate, state, context };
-  renderSuggest();
+  window.edScoreLines = () => included().map(result).filter(r => r.complete).map(r => r.text);
+  window.edScoresClear = () => { manual.clear(); removed.clear(); for (const k in state) delete state[k]; if (autoBox) autoBox.checked = true; open(''); renderStatus(); };
+  window.edScores = { SCORES, result, evaluate, state, context, included };
+  renderSuggest(); renderStatus();
 })();

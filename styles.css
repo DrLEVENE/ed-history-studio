@@ -219,3 +219,9 @@ button,summary,.quick-options label{-webkit-user-select:none;user-select:none;-w
 .photo-alt button[aria-pressed=true]{background:var(--teal);color:#fff}
 @media(pointer:coarse){.photo-alt button{min-height:44px}}
 .photo-sets{margin:8px 0 4px}.photo-sets .quick-options{margin-top:6px}
+.score-autotoggle{display:flex;align-items:center;gap:10px;margin:0 0 14px;font-weight:600;font-size:14px;min-height:44px}
+.score-autotoggle input{width:22px;height:22px;margin:0;flex:none}
+.score-list li.waiting{color:var(--abn-on)}
+.score-list-actions{display:flex;gap:6px;flex:none}
+.score-checkhead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:4px 0 8px}
+.score-crit{margin-bottom:10px}

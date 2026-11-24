@@ -325,7 +325,7 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   await clear();
 
   // Version 52: scores
-  const sres = (k, v) => page.evaluate(([k, v]) => { const S = window.edScores; S.state[k] = { values: { ...v }, touched: new Set(S.SCORES[k].items.map(i => i.k)) }; return S.result(k).text; }, [k, v]);
+  const sres = (k, v) => page.evaluate(([k, v]) => { const S = window.edScores, vals = { ...v }; S.SCORES[k].items.forEach(i => { if (i.kind === 'check' && vals[i.k] == null) vals[i.k] = false; }); S.state[k] = { values: vals, touched: new Set(S.SCORES[k].items.map(i => i.k)) }; return S.result(k).text; }, [k, v]);
   const sc = [
     ['NEWS2 boundaries', await sres('news2', { rr: '25', scale: 0, o2: 1, spo2: '93', sbp: '90', hr: '131', acvpu: 1, temp: '39.1' }), /^NEWS2 18 \(RR 3, air or oxygen 2, SpO₂ 2, SBP 3, pulse 3, consciousness 3, temperature 2\): high/],
     ['NEWS2 scale 2 on oxygen', await sres('news2', { rr: '16', scale: 1, o2: 1, spo2: '97', sbp: '120', hr: '72', acvpu: 0, temp: '36.8' }), /^NEWS2 5 .*SpO₂ 3, .*: medium clinical risk band/],
@@ -344,18 +344,29 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   check('Scores give the published totals and bands (12 worked cases)', scBad.length === 0, scBad.map(([n, t]) => n + ': ' + t).join(' | '));
   await clear();
   await page.selectOption('#condition', 'Chest pain'); await settle();
+  await page.fill('#pc0', 'chest pain');
   await page.fill('#age', '58'); await page.fill('#e1-v-hr', '112'); await settle();
+  check('Auto scores: nothing reaches the note before every item is answered', !/SCORES/.test(await note()) && /HEART: not in the note yet/.test(await page.textContent('#score-added')), await note());
   await page.locator('#score-suggest button', { hasText: 'HEART' }).click();
-  check('Scores: age is filled from the page and an incomplete score cannot be added', await page.inputValue('#sc-heart-a') === '58' && await page.isDisabled('#score-add'));
+  check('Auto scores: age is filled from the page', await page.inputValue('#sc-heart-a') === '58');
   for (const [k, i] of [['h', 1], ['e', 0], ['r', 1], ['t', 0]]) await page.locator('input[name="sc-heart-' + k + '"]').nth(i).check({ force: true });
-  await page.click('#score-add'); await settle();
-  check('Scores: an added score appears under SCORES in the note', /\n\nSCORES:\nHEART 3\/10 \(history 1, ECG 0, age 1, risk factors 1, troponin 0\): low risk band \(0–3\)\./.test(await note()), await note());
+  await settle();
+  check('Auto scores: HEART enters the note on its own once answered', /\n\nSCORES:\nHEART 3\/10 \(history 1, ECG 0, age 1, risk factors 1, troponin 0\): low risk band \(0–3\)\./.test(await note()), await note());
   await page.fill('#age', '66'); await settle();
-  check('Scores: a changed input flags the note version as out of date', /earlier version/.test(await page.textContent('#score-result')));
-  await page.click('#score-add'); await settle();
-  check('Scores: Update in note replaces the line', /HEART 4\/10/.test(await note()) && !/HEART 3\/10/.test(await note()));
+  check('Auto scores: the note follows a changed answer (age 66 gives HEART 4)', /HEART 4\/10/.test(await note()) && !/HEART 3\/10/.test(await note()));
+  await g0Sym(page, 'Haemoptysis', 'present'); await settle();
+  await page.locator('#score-suggest button', { hasText: 'Wells PE' }).click();
+  check('Auto scores: Wells PE waits until every criterion is answered', !/Wells PE/.test(await note()));
+  const autoHr = await page.locator('input[name="sc-wellspe-hr"][value="true"]').isChecked(), autoHaem = await page.locator('input[name="sc-wellspe-haem"][value="true"]').isChecked();
+  await page.click('#score-rest'); await settle();
+  check('Auto scores: heart rate and a haemoptysis symptom fill Wells PE; the rest marked absent', autoHr && autoHaem && /Wells PE 2\.5\/12\.5 \(heart rate over 100 \+1\.5, haemoptysis \+1\): PE unlikely/.test(await note()), await note());
+  await page.locator('#score-added button[aria-label="Remove HEART from the note"]').click(); await settle();
+  await page.fill('#e1-v-rr', '18'); await settle();
+  check('Auto scores: a removed score stays out of the note', !/HEART/.test(await note()) && /Wells PE/.test(await note()));
+  await page.uncheck('#score-auto'); await page.fill('#e1-v-rr', '19'); await settle();
+  check('Auto scores: turning automatic off leaves only scores added by hand', !/SCORES/.test(await note()));
   await clear();
-  check('Scores: Clear encounter removes scores', (await page.locator('#score-added li').count()) === 0 && !/SCORES/.test(await note()));
+  check('Auto scores: Clear encounter removes scores and turns automatic back on', !/SCORES/.test(await note()) && await page.isChecked('#score-auto') && (await page.locator('#score-added li:not(.waiting)').count()) === 0);
 
   check('No script errors', errors.length === 0, errors.join(' | '));
   await browser.close();

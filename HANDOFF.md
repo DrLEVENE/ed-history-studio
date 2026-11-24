@@ -1,4 +1,4 @@
-# ED History Studio — version 52
+# ED History Studio — version 53
 
 Open index.html directly in a browser, or use the live site. No build or dependency installation is needed to run it.
 
@@ -31,3 +31,5 @@ Version 52:
 - scores.js holds the 11 scores as data: items are choice, check or num, with optional auto() from the page. result() builds the note line. window.edScoreLines() feeds a SCORES section in generate(), and window.edScoresClear() is called from Clear encounter. Values filled from the page update in place (syncPanel), never by rebuilding the panel: a rebuild on blur swallowed taps on "Update in note".
 - photo.js loads vendor/tesseract on demand (fetched by .github/workflows/vendor-tesseract.yml) and runs two passes (sparse and block). parse() handles labelled values, flowsheet tables, °F and oxygen. The test images in tests/fixtures are fictional.
 - Clinical content for Hypoxia, and the choice and wording of score bands, still need clinical review.
+
+Version 53: scores are live. included() = scores added by hand, plus (when #score-auto is ticked) SUGGEST[presentation] minus any the clinician removed. window.edScoreLines() returns only complete results, recomputed at every note build. context() exposes yn(symptom), hist(chip) and exam(chip) for item auto() functions. Check items are tri-state (true, false, unanswered); unanswered blocks completion. Keep it that way: an unticked box must never be read as "absent" in the note.
