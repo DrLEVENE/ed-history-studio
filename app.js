@@ -1049,7 +1049,7 @@ function sectionExamination(){
 
 Object.keys(configs).sort((a,b)=>a.localeCompare(b,'en',{sensitivity:'base'})).forEach(k=>$('condition').add(new Option(k,k)));active=$('condition').value;renderForm();renderPC();
 
-(()=>{const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches,glide=reduceMotion?'auto':'smooth';const entry=document.querySelector('.layout > section');entry.addEventListener('input',markStale);entry.addEventListener('change',markStale);entry.addEventListener('click',e=>{if(e.target.closest('button'))markStale()});
+(()=>{const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)').matches,glide='auto';const entry=document.querySelector('.layout > section');entry.addEventListener('input',markStale);entry.addEventListener('change',markStale);entry.addEventListener('click',e=>{if(e.target.closest('button'))markStale()});
 $('output').addEventListener('input',()=>{noteEdited=true;$('status').textContent='You edited the note, so automatic updates are paused. Update note rebuilds it from your entries.'});
 let liveTimer=0,uiTick=false;const schedule=()=>{clearTimeout(liveTimer);liveTimer=setTimeout(liveUpdate,300)};
 entry.addEventListener('input',schedule);entry.addEventListener('change',schedule);entry.addEventListener('click',e=>{if(e.target.closest('button'))schedule()});$('condition').addEventListener('change',schedule);
@@ -1060,13 +1060,13 @@ window.addEventListener('beforeunload',e=>{if(encounterDirty){e.preventDefault()
 const jump=$('jump');const fillJump=()=>{const heads=[...document.querySelectorAll('main h2')];jump.replaceChildren(new Option('Jump to section…',''));heads.forEach((h,i)=>jump.add(new Option(h.textContent,String(i))))};
 jump.addEventListener('pointerdown',fillJump);jump.addEventListener('focus',fillJump);jump.onchange=()=>{const h=document.querySelectorAll('main h2')[Number(jump.value)];if(jump.value!==''&&h)h.scrollIntoView({behavior:glide,block:'start'});jump.value=''};fillJump();
 $('quickgen').onclick=()=>{clearTimeout(liveTimer);liveUpdate();document.querySelector('.output').scrollIntoView({behavior:glide,block:'start'})};
-// Section pills, scroll position bar and card reveal. Purely presentational.
+// Section pills and scroll position bar. Purely presentational.
 const sections=[['Patient','sec-patient'],['Obs','sec-obs'],['History','details-title'],['Symptoms','sec-symptoms'],['Examination','sec-exam'],['Plan','sec-plan']];
 const headFor=id=>$(id);
 sections.forEach(([name,re])=>{const b=document.createElement('button');b.type='button';b.textContent=name;b.onclick=()=>{const h=headFor(re);if(h)h.scrollIntoView({behavior:glide,block:'start'})};$('secnav').append(b)});
 let ticking=false;const onScroll=()=>{ticking=false;const doc=document.documentElement,max=doc.scrollHeight-innerHeight;$('progress').style.transform='scaleX('+(max>0?Math.min(1,scrollY/max):0)+')';const bar=document.querySelector('.appbar'),barH=bar.getBoundingClientRect().height;doc.style.setProperty('--barh',Math.round(barH)+'px');bar.classList.toggle('stuck',bar.getBoundingClientRect().top<=0&&scrollY>0);let current=0;sections.forEach(([,re],i)=>{const h=headFor(re);if(h&&h.getBoundingClientRect().top<=barH+60)current=i});if(max>0&&scrollY>=max-2)current=sections.length-1;[...$('secnav').children].forEach((b,i)=>b.setAttribute('aria-current',String(i===current)))};
 addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(onScroll)}},{passive:true});addEventListener('resize',onScroll);onScroll();
-if(!reduceMotion&&'IntersectionObserver' in window){const io=new IntersectionObserver(items=>items.forEach(it=>{if(it.isIntersecting){const c=it.target;io.unobserve(c);c.classList.add('in');c.addEventListener('transitionend',()=>c.classList.remove('reveal','in'),{once:true});setTimeout(()=>c.classList.remove('reveal','in'),900)}}),{rootMargin:'0px 0px -6% 0px'});document.querySelectorAll('.layout > section:first-child > .card').forEach(c=>{if(c.getBoundingClientRect().top>innerHeight){c.classList.add('reveal');io.observe(c)}})}
+// Version 51: the card fade-in on scroll was removed; jumps are instant (used many times per encounter).
 })();
 
 // Offline support: the service worker keeps a copy of the page files only, never anything entered.

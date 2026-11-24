@@ -1,5 +1,17 @@
 # Changelog
 
+## Version 51 — 24 November 2026
+Phone feel, checked against Emil Kowalski's skills (mobile-native, review-animations, break-ui; MIT licence). The look at rest is unchanged: the phone view is pixel-identical to version 50.
+- Pulling down at the top of the page no longer triggers the browser's pull-to-refresh, which reloaded the page and wiped the encounter.
+- Tapping a chip no longer leaves it stuck in its hover colour on phones and tablets. Hover colours now apply only with a mouse.
+- No grey flash when tapping; buttons and chips respond as soon as the finger lands (no double-tap-zoom delay) and shrink slightly while pressed.
+- Long-pressing a chip or button no longer selects its text. The note and all typed text stay selectable.
+- Fields no longer zoom the page on landscape phones and tablets (16 px text on touch screens, not only on narrow ones).
+- Removed the fade-in on cards while scrolling, and section jumps are now instant. Both repeat many times per encounter; the fade could leave a card half-visible after a jump.
+- With very large phone text settings, "View note" no longer squeezes "Jump to section" to a sliver.
+- Worst-case data (a 103-year-old with a long medication list, a long complaint and a long unbroken string) at 320 px, landscape and large text: nothing overflows or is clipped.
+- Needs a real phone to confirm: pull-to-refresh, tap delay and long-press behaviour cannot be reproduced in a desktop browser.
+
 ## Version 50 — 23 November 2026
 (Version 49, a new colour theme, was withdrawn; this builds on version 48.) Checked against the ui-ux-pro-max accessibility and form guidelines. No change to how the page looks or to clinical content.
 - Privacy: the browser no longer keeps form history of what is typed. Before, Chrome and Safari could remember names, complaints and medicines and offer them as suggestions on the next patient.

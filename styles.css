@@ -1,6 +1,6 @@
 :root{--ink:#12262b;--muted:#566c71;--paper:#f2f5f4;--sheet:#fff;--rule:#dde5e3;--rule-strong:#c2d0cd;--teal:#0e6b62;--teal-dark:#0a524b;--tint:#e4f3ee;--slate:#44545a;--abn:#fff3ea;--abn-on:#9a4a12;--bar:#0f3b42}
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
+html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;overscroll-behavior-y:none}
 body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif}
 [hidden]{display:none!important}
 /* App bar: one row for what the encounter is and where you are in it */
@@ -8,11 +8,11 @@ body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.45 system-ui,
 .appbar h1{margin:0;font-size:16px;font-weight:650;letter-spacing:.1px;white-space:nowrap}
 .appbar .pick{flex:0 1 300px;min-width:200px;margin:0}
 .appbar select{margin:0;padding:8px 10px;border-color:transparent;font-weight:600}
-.appbar #reset{margin-left:auto;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4);padding:7px 14px}
-.appbar #reset:hover{background:rgba(255,255,255,.12)}
+.appbar #reset{margin-left:auto;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4);padding:7px 14px}@media(hover:hover) and (pointer:fine){
+.appbar #reset:hover{background:rgba(255,255,255,.12)}}
 .secnav{display:flex;gap:2px;flex-wrap:wrap}
-.secnav button{padding:7px 12px;border-radius:999px;background:transparent;color:#cfe3e1;font-size:13.5px;font-weight:500}
-.secnav button:hover{background:rgba(255,255,255,.12);color:#fff}
+.secnav button{padding:7px 12px;border-radius:999px;background:transparent;color:#cfe3e1;font-size:13.5px;font-weight:500}@media(hover:hover) and (pointer:fine){
+.secnav button:hover{background:rgba(255,255,255,.12);color:#fff}}
 .secnav button[aria-current=true]{background:#fff;color:var(--bar)}
 #progress{position:fixed;top:0;left:0;height:3px;width:100%;background:#58d3c2;transform:scaleX(0);transform-origin:0 50%;z-index:40;pointer-events:none}
 main{max-width:1300px;margin:0 auto;padding:20px 24px 40px}
@@ -42,35 +42,35 @@ textarea{line-height:1.6;resize:vertical}
 .pc-row{display:grid;grid-template-columns:1.6fr 1fr 40px;gap:10px;align-items:end;margin-bottom:10px}
 .pc-row .remove{padding:0;height:40px;font-size:20px;line-height:1}
 /* Buttons */
-button{font:inherit;border:0;border-radius:8px;padding:10px 16px;background:var(--teal);color:#fff;font-weight:600;cursor:pointer;transition:background-color .15s ease,transform .08s ease}
-button:hover{background:var(--teal-dark)}
-button:active{transform:translateY(1px)}
-button.secondary{background:#e8efee;color:#1f3f45}
-button.secondary:hover{background:#dae6e4}
+button{font:inherit;border:0;border-radius:8px;padding:10px 16px;background:var(--teal);color:#fff;font-weight:600;cursor:pointer;transition:background-color .15s ease,transform .12s cubic-bezier(.23,1,.32,1)}@media(hover:hover) and (pointer:fine){
+button:hover{background:var(--teal-dark)}}
+button:active,.quick-options label:active{transform:scale(.97)}
+button.secondary{background:#e8efee;color:#1f3f45}@media(hover:hover) and (pointer:fine){
+button.secondary:hover{background:#dae6e4}}
 button:focus-visible,summary:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
 .appbar button:focus-visible,.appbar select:focus{outline-color:#8fe3d6}
 /* Chips: one tap to pick, tap again to clear */
 .quick-field{min-width:0}
 .quick-options{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.quick-options label,.quick-options button{position:relative;display:inline-flex;align-items:center;min-height:36px;padding:6px 12px;border:1px solid var(--rule-strong);border-radius:999px;background:#fff;color:var(--ink);font-size:13.5px;font-weight:500;line-height:1.2;cursor:pointer;transition:background-color .12s ease,border-color .12s ease,color .12s ease}
-.quick-options label:hover,.quick-options button:hover{background:#eef5f3;border-color:#9fb8b3}
+.quick-options label,.quick-options button{position:relative;display:inline-flex;align-items:center;min-height:36px;padding:6px 12px;border:1px solid var(--rule-strong);border-radius:999px;background:#fff;color:var(--ink);font-size:13.5px;font-weight:500;line-height:1.2;cursor:pointer;transition:background-color .12s ease,border-color .12s ease,color .12s ease}@media(hover:hover) and (pointer:fine){
+.quick-options label:hover,.quick-options button:hover{background:#eef5f3;border-color:#9fb8b3}}
 .quick-options label>input[type=checkbox]{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
 .quick-options label:has(input:checked),.quick-options button[aria-pressed=true]{background:var(--teal)!important;border-color:var(--teal);color:#fff}
 .quick-options label.abnormal:has(input:checked){background:var(--abn-on)!important;border-color:var(--abn-on)}
 .quick-options label:has(input:focus-visible){outline:2px solid var(--teal);outline-offset:2px}
 .quick-options.scale button{min-width:36px;justify-content:center;padding:6px 8px;font-variant-numeric:tabular-nums}
-.quick-options button.more{border-style:dashed;color:var(--muted);background:transparent}
-.quick-options button.more:hover{color:var(--ink)}
+.quick-options button.more{border-style:dashed;color:var(--muted);background:transparent}@media(hover:hover) and (pointer:fine){
+.quick-options button.more:hover{color:var(--ink)}}
 select.chipped{display:none}
 .quick-field>select{margin-top:6px}
 .quick-field>input:not([type=hidden]),.exam-quick>input:not([type=hidden]){margin-top:8px}
 /* Symptoms */
 .symptoms{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}
-.rapid-row{display:grid;grid-template-columns:minmax(0,1fr) 42px 42px;gap:4px;align-items:center;border-bottom:1px solid var(--rule);padding:4px 0 4px 6px;border-radius:6px;transition:background-color .12s ease}
-.rapid-row:hover{background:#f5f9f8}
+.rapid-row{display:grid;grid-template-columns:minmax(0,1fr) 42px 42px;gap:4px;align-items:center;border-bottom:1px solid var(--rule);padding:4px 0 4px 6px;border-radius:6px;transition:background-color .12s ease}@media(hover:hover) and (pointer:fine){
+.rapid-row:hover{background:#f5f9f8}}
 .rapid-row span{font-size:13.5px;font-weight:500}
-.rapid-row button{min-height:36px;padding:0;background:#edf2f1;color:#2c4449;font-size:19px;font-weight:500}
-.rapid-row button:hover{background:#dde8e6}
+.rapid-row button{min-height:36px;padding:0;background:#edf2f1;color:#2c4449;font-size:19px;font-weight:500}@media(hover:hover) and (pointer:fine){
+.rapid-row button:hover{background:#dde8e6}}
 .rapid-row button[data-value=present][aria-pressed=true]{background:var(--teal);color:#fff}
 .rapid-row button[data-value=absent][aria-pressed=true]{background:var(--slate);color:#fff}
 .rapid-row[data-state=present] span{font-weight:650;color:var(--teal-dark)}
@@ -111,7 +111,7 @@ select.chipped{display:none}
 #version{margin:6px 0 0}
 pre{white-space:pre-wrap;font:inherit;font-size:13px}
 .quickbar{display:none}
-.reveal{opacity:0}.reveal.in{opacity:1;transition:opacity .5s ease}
+
 @media(pointer:coarse){.quick-options label,.quick-options button{min-height:44px}.rapid-row{grid-template-columns:minmax(0,1fr) 46px 46px}.rapid-row button{min-height:44px}.exam-head .quick-options button{min-height:36px}}
 @media(max-width:850px){
 .appbar{position:static;padding:10px 14px}
@@ -125,8 +125,8 @@ main{padding:14px 14px 96px}
 main h2{scroll-margin-top:12px}
 html{scroll-padding-bottom:calc(88px + env(safe-area-inset-bottom))}
 .quickbar{display:flex;gap:10px;position:fixed;left:0;right:0;bottom:0;z-index:20;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--rule);box-shadow:0 -4px 14px rgba(18,59,67,.12)}
-.quickbar select{flex:1;min-width:0;margin:0}
-.quickbar button{flex:none;white-space:nowrap}
+.quickbar select{flex:1 1 50%;min-width:0;margin:0}
+.quickbar button{flex:0 1 auto;max-width:48%;overflow-wrap:anywhere}
 }
 @media(max-width:550px){input,select,textarea{font-size:16px}.card{padding:16px}.vitals-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pc-row{grid-template-columns:1fr 1fr 40px}.exam-head{flex-wrap:wrap}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}.reveal{opacity:1}}
@@ -169,3 +169,9 @@ html{scroll-padding-bottom:calc(88px + env(safe-area-inset-bottom))}
 @media(pointer:coarse){.copyparts button{min-height:44px}}
 .fielderr{display:block;margin-top:4px;font-size:13px;font-weight:500;line-height:1.4;color:var(--abn-on)}
 input[aria-invalid=true]{border-color:var(--abn-on)}
+
+/* Version 51: phone feel (Emil Kowalski mobile-native and animation rules) */
+button,summary,.quick-options label,.secnav button,select,a{touch-action:manipulation}
+button,summary,.quick-options label{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.quick-options label,.quick-options button{transition:background-color .12s ease,border-color .12s ease,color .12s ease,transform .12s cubic-bezier(.23,1,.32,1)}
+@media(pointer:coarse){input,select,textarea{font-size:16px}}

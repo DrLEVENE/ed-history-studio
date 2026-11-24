@@ -1,4 +1,4 @@
-# ED History Studio — version 50
+# ED History Studio — version 51
 
 Open index.html directly in a browser, or use the live site. No build or dependency installation is needed to run it.
 
@@ -23,3 +23,5 @@ My quick normal exam (version 47): Dr Levene's usual normal general, abdominal, 
 Version 48: observations (vital signs) live in the Observations card at the top and belong to the patient, not the presentation (obsValues, moveObservations). Each chip group and the symptom list is one Tab stop with arrow keys inside (rove). Copy by section uses noteSection(). quickNormalCheck() shows non-blocking prompts. Do not hide history or symptom items by position: the lists are not ordered by clinical priority, and folding them hid red flags (tried and withdrawn in version 48).
 
 Version 50: an IIFE at the end of app.js sets autocomplete="off" and inputmode="decimal" on every field (a MutationObserver reapplies it to fields built later), names each "Add detail" button, and shows inline .fielderr messages with aria-invalid for out-of-range age and vital signs (the note still pauses, as before). styles.css adds scroll-padding-bottom on phones so focused fields clear the fixed bottom bar. Version 49 (blue glass theme) was withdrawn at Dr Levene's request; keep the current look unless he asks for a change.
+
+Version 51: phone feel per Emil Kowalski's mobile-native and animation rules. Every :hover rule is wrapped in @media(hover:hover) and (pointer:fine) in place (not moved, so selected-state rules after it still win). html has overscroll-behavior-y:none (stops pull-to-refresh wiping an encounter), no tap highlight, no smooth scrolling; jumps use behavior 'auto'; the card reveal was removed. Press feedback is scale(.97) with a 120 ms strong ease-out. Keep new hover rules inside that media query.
