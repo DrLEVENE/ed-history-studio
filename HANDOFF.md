@@ -1,4 +1,4 @@
-# ED History Studio — version 54
+# ED History Studio — version 55
 
 Open index.html directly in a browser, or use the live site. No build or dependency installation is needed to run it.
 
@@ -36,5 +36,6 @@ Version 53: scores are live. included() = scores added by hand, plus (when #scor
 
 Version 54:
 - labs.js: the analyte table A (aliases; units with SI factor and typical range), parse() line by line, consuming each match so several results can share a line. Short symbols (Na, K, Ca, Mg, Cr, PT, BE, CO2) are case-sensitive on purpose: "mg/dL" must not read as magnesium. PLAUSIBLE limits, report-flag disagreement, decimal repair of ranges, and Tesseract's word confidence (edOCR.unsure()) all leave a result unticked. kept{} feeds edLabLines() (INVESTIGATIONS) and edLabs.get() (scores).
-- ai.js: the only network call the site makes (api.anthropic.com, direct browser access with the doctor's own key). It forces the report_differential tool for structured output. deidentify() runs before the preview and the preview is editable. edImpression() feeds IMPRESSION with ticked names only.
-- Privacy statements now say "nothing leaves the device except Diagnosis support, when you send it". Keep the tests that assert no outside requests for every other feature.
+- (Version 54's AI diagnosis support was removed in version 55.)
+
+Version 55: ai.js is gone. Dr Levene asked for no AI. dx.js holds RULES per presentation as D(name, prior, [[token, weight]], distinguishing tests, must-not-miss reason). Tokens: s: and s-: (symptom present or denied), h: (history chip), e: (exam chip), o: (observation), l: (lab in SI units, or >uln for report limits), a: (age), x: (sex). Rule labels must match the page's wording exactly. Run tools/dxcheck-style validation (extract every presentation's symptoms and chips, then compare) after editing either app.js content or dx.js. A score more than 4 below its prior means the record rules it out: it is not offered. edImpression() feeds IMPRESSION with ticked names only.

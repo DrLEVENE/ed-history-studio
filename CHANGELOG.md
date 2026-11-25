@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 55 — 24 November 2026
+- Diagnosis support no longer uses AI. The Claude connection, API key settings and every network request were removed; nothing leaves the device again.
+- The top 3 diagnoses now come from rules on the device. Each presentation (all except sexual assault) has a curated list of common and must-not-miss diagnoses, about 300 in total. The list is ranked by what has been recorded: symptoms marked present or denied, history and exam chips, observations, lab results, age and sex.
+- Each diagnosis shows the recorded findings that fit or argue against it, what would help distinguish it, and why it must not be missed where that applies. Must-not-miss diagnoses outside the top 3 are listed below them.
+- Diagnoses the record rules out by sex, age or pregnancy status are not offered. With few findings recorded, the card says it is showing the usual order. Only ticked diagnoses go under IMPRESSION, and the list updates live.
+- Every rule was checked against the page's own wording (0 mismatches). Twelve clinical scenarios ranked as expected, including ACS, chest wall pain, dissection, subarachnoid haemorrhage, ectopic pregnancy, meningococcal sepsis, DKA and dengue. The rules are a bedside prompt list, not a validated diagnostic model, and need clinical review.
+- 89 automated checks, including one that no feature sends anything off the device.
+
 ## Version 54 — 24 November 2026
 - New Investigations card. It reads blood results from a photo, a saved image, a pasted screenshot (Paste button, or tap the box and paste) or pasted text. Images are read on this device by the same reader as the observations; nothing is uploaded or saved. It recognises about 45 tests: FBC, U&E, LFTs, bone profile, CRP, troponin, BNP, lactate and blood gas, coagulation, D-dimer, glucose, ketones and more, in SI or US units. High and low flags use the laboratory's range printed on the report when it is found; otherwise a typical adult range, labelled as such. Assay-specific tests are flagged only against the report's range.
 - Safeguards for misreads: values the reader was unsure of, implausible values, and values whose flag disagrees with the report's own H or L are left unticked, each with the reason. Ranges read without their decimal points are corrected and labelled. Checked results go into the note under INVESTIGATIONS, grouped by panel. Tested on a fictional report image and a blurred phone photo of it.

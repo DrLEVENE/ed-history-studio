@@ -237,9 +237,8 @@ button,summary,.quick-options label{-webkit-user-select:none;user-select:none;-w
 .labs-flag[data-flag=high],.labs-flag[data-flag=low]{color:var(--abn-on)}
 .labs-range{flex-basis:100%;font-size:12.5px;color:var(--muted)}
 .score-list li.labs-abn span:first-child{color:var(--abn-on)}
-#ai-status:empty{display:none}
-#ai-out:not(:empty){margin-top:12px}
-#ai-preview{font-size:13px;line-height:1.45}
+#dx-out{margin-top:12px}
+.dx-mnm-note{margin:8px 0 0;font-size:13px;color:var(--abn-on)}
 .ai-dx{padding:12px 14px;margin:0 0 10px;border:1px solid var(--rule);border-radius:10px;background:var(--paper)}
 .ai-dx h3{font-size:15px;margin:0 0 6px}
 .ai-lk{font-size:12px;font-weight:600;color:var(--teal);white-space:nowrap}
@@ -250,6 +249,3 @@ button,summary,.quick-options label{-webkit-user-select:none;user-select:none;-w
 .ai-mnm-row p{margin:0;font-size:13.5px}
 .ai-tick{margin-top:6px}
 .ai-stale{padding:10px 12px;border-left:3px solid var(--abn-on);background:var(--abn);border-radius:0 8px 8px 0;font-size:13.5px}
-.ai-settings{margin-top:14px}
-.ai-settings summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:600;font-size:14px}
-#ai-key-msg{margin-top:0}

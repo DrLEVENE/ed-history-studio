@@ -324,30 +324,41 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   await g.locator('#labs-panel .actions button', { hasText: 'Discard' }).click();
   check('Labs: nothing leaves the device', leaving.length === 0, leaving.join(', '));
 
-  // 20. Diagnosis support (Anthropic API mocked; no real key or request)
+  // 20. Diagnosis support: rule-based, on the device
   await clearG();
-  const apiCalls = [];
-  await g.route('https://api.anthropic.com/**', r => { apiCalls.push({ h: r.request().headers(), b: JSON.parse(r.request().postData()) }); r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ model: 'claude-sonnet-5-5', content: [{ type: 'tool_use', id: 't', name: 'report_differential', input: {
-    diagnoses: [{ name: 'Acute coronary syndrome', likelihood: 'most likely', supporting: ['Central chest pain'], against: [], distinguish: ['Serial troponin'] }, { name: 'Pulmonary embolism', likelihood: 'possible', supporting: ['Tachycardia'], against: [], distinguish: ['CTPA'] }, { name: 'Gastro-oesophageal reflux', likelihood: 'possible', supporting: [], against: [], distinguish: [] }],
-    must_not_miss: [{ name: 'Aortic dissection', reason: 'Severe pain' }], missing_information: ['Risk factors'] } }] }) }); });
-  await g.selectOption('#condition', 'Chest pain'); await g.fill('#pc0', 'central chest pain'); await g.fill('#age', '58'); await g.fill('#e1-v-hr', '112');
-  await g.fill('#extra', 'Daughter on 876 555 1234, MRN 4471029, Mr John Testperson.'); await g.waitForTimeout(500);
-  await g.click('#ai-go');
-  check('Diagnosis: asks for a key first and sends nothing', /API key/.test(await g.textContent('#ai-status')) && apiCalls.length === 0);
-  await g.fill('#ai-key', 'test-key-local-only'); await g.click('#ai-key-save'); await g.click('#ai-go');
-  const pv2 = await g.inputValue('#ai-preview');
-  check('Diagnosis: shows exactly what will be sent, with identifiers removed, before sending', apiCalls.length === 0 && !/876 555 1234|4471029|John Testperson/.test(pv2) && /HR 112/.test(pv2), pv2);
-  await g.click('#ai-send'); await g.waitForSelector('.ai-dx', { timeout: 10000 });
-  const call = apiCalls[0] || { h: {}, b: {} };
-  check('Diagnosis: request uses the clinician\'s key, the forced tool and the shown text', call.h['x-api-key'] === 'test-key-local-only' && call.h['anthropic-dangerous-direct-browser-access'] === 'true' && call.b.tool_choice && call.b.tool_choice.name === 'report_differential' && call.b.messages[0].content.includes(pv2));
-  check('Diagnosis: nothing enters the note until ticked', !/IMPRESSION/.test(await g.inputValue('#output')) && (await g.locator('.ai-dx h3').count()) === 4);
-  await g.locator('.ai-dx').nth(0).locator('.ai-tick input').check(); await g.locator('.ai-mnm .ai-tick input').check(); await g.waitForTimeout(600);
-  check('Diagnosis: ticked diagnoses go under IMPRESSION', /\n\nIMPRESSION:\nDifferential: 1\. Acute coronary syndrome; 2\. Aortic dissection\./.test(await g.inputValue('#output')));
-  await g.fill('#age', '59'); await g.waitForTimeout(1200);
-  check('Diagnosis: warns when the note changes after the suggestions', (await g.locator('#ai-stale').count()) === 1);
+  const H = async t => g.locator('#fields label:visible, #fields button:visible', { hasText: new RegExp('^' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$') }).first().click();
+  const SY = (n, v) => g.locator(`#symptoms button[aria-label="${n} — ${v || 'present'}"]`).click();
+  const dxTop = async () => { await g.waitForTimeout(400); return g.$$eval('#dx-out .ai-dx:not(.ai-mnm) h3', hs => hs.map(h => h.textContent.replace(/^\d\.\s*/, ''))); };
+  await g.selectOption('#condition', 'Chest pain'); await g.fill('#age', '62');
+  for (const h of ['Central / retrosternal', 'Pressure', 'Left arm', 'Exertion worsens']) await H(h);
+  await SY('Diaphoresis');
+  await g.fill('#labs-text', 'Troponin I 120 ng/L (<14)'); await g.click('#labs-textbtn'); await g.click('#labs-add');
+  let top3 = await dxTop();
+  check('Diagnosis: typical ACS history with a raised troponin ranks ACS first', top3[0] === 'Acute coronary syndrome' && top3.length === 3, top3.join(' > '));
+  const fits = await g.locator('#dx-out .ai-dx').first().textContent();
+  check('Diagnosis: shows the recorded findings behind the ranking', /Fits.*Pressure.*Diaphoresis.*age 62.*troponin 120 ng\/L/s.test(fits), fits);
+  check('Diagnosis: must-not-miss diagnoses are listed when not in the top 3', /Must not miss/.test(await g.textContent('#dx-out')));
+  check('Diagnosis: nothing enters the note until ticked', !/IMPRESSION/.test(await g.inputValue('#output')));
+  await g.locator('#dx-out .ai-dx').first().locator('.ai-tick input').check(); await g.waitForTimeout(600);
+  check('Diagnosis: ticked diagnoses go under IMPRESSION', /\n\nIMPRESSION:\nDifferential: 1\. Acute coronary syndrome\./.test(await g.inputValue('#output')));
   await clearG();
-  check('Diagnosis: Clear encounter removes suggestions and the impression', (await g.locator('.ai-dx').count()) === 0 && !/IMPRESSION/.test(await g.inputValue('#output')));
-  await g.unroute('https://api.anthropic.com/**');
+  check('Diagnosis: Clear encounter removes the impression', !/IMPRESSION/.test(await g.inputValue('#output')));
+  await g.selectOption('#condition', 'Chest pain'); await g.fill('#age', '24');
+  for (const h of ['Sharp', 'Palpation reproduces', 'Movement worsens']) await H(h);
+  top3 = await dxTop();
+  check('Diagnosis: reproducible chest wall pain in a young adult ranks musculoskeletal first', top3[0] === 'Musculoskeletal chest wall pain', top3.join(' > '));
+  await clearG(); await g.selectOption('#condition', 'Headache'); await H('Sudden'); await SY('Thunderclap onset');
+  top3 = await dxTop();
+  check('Diagnosis: thunderclap headache ranks subarachnoid haemorrhage first', top3[0] === 'Subarachnoid haemorrhage', top3.join(' > '));
+  await clearG(); await g.selectOption('#condition', 'PV Bleeding'); await H('Pregnancy possible / status unknown'); await SY('Shoulder-tip pain'); await SY('Syncope');
+  top3 = await dxTop();
+  check('Diagnosis: shoulder-tip pain and syncope with possible pregnancy ranks ectopic first', top3[0] === 'Ectopic pregnancy', top3.join(' > '));
+  await clearG(); await g.selectOption('#condition', 'Acute abdomen — atraumatic'); await g.locator('#intro button:visible, #intro label:visible', { hasText: /^Female$/ }).first().click(); await g.waitForTimeout(400);
+  const sexSet = await g.inputValue('#sex');
+  check('Diagnosis: diagnoses ruled out by sex are not offered (no testicular torsion for a woman)', sexSet === 'Female' && !/Testicular torsion/.test(await g.textContent('#dx-out')), sexSet);
+  const rulesOk = await g.evaluate(() => Object.keys(window.edDx.RULES).length);
+  check('Diagnosis: rules cover every presentation except sexual assault', rulesOk === (await g.$$eval('#condition option', o => o.filter(x => x.value).length)) - 1, String(rulesOk));
+  check('No feature sends anything off the device', leaving.length === 0, leaving.join(', '));
   server.close();
 
   // Version 50: form safety and accessibility
