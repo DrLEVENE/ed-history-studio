@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 56 — 25 November 2026
+Wording fixes found in a full test encounter (fictional 64-year-old man with chest pain, obs from a screenshot, bloods from a pasted lab report):
+- Radiation sites are written in lower case ("left arm and jaw", not "Jaw").
+- Aggravating and relieving factors read as plain sentences ("The pain is worse on exertion and reproduced by palpation" instead of "factors include exertion worsens").
+- The examination no longer repeats SpO₂ and room air, which the observations line already gives.
+
 ## Version 55 — 24 November 2026
 - Diagnosis support no longer uses AI. The Claude connection, API key settings and every network request were removed; nothing leaves the device again.
 - The top 3 diagnoses now come from rules on the device. Each presentation (all except sexual assault) has a curated list of common and must-not-miss diagnoses, about 300 in total. The list is ranked by what has been recorded: symptoms marked present or denied, history and exam chips, observations, lab results, age and sex.
