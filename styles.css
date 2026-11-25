@@ -249,3 +249,6 @@ button,summary,.quick-options label{-webkit-user-select:none;user-select:none;-w
 .ai-mnm-row p{margin:0;font-size:13.5px}
 .ai-tick{margin-top:6px}
 .ai-stale{padding:10px 12px;border-left:3px solid var(--abn-on);background:var(--abn);border-radius:0 8px 8px 0;font-size:13.5px}
+.labs-interp-box{margin-top:14px;padding:12px 14px;border-left:3px solid var(--teal);background:var(--tint);border-radius:0 10px 10px 0}
+.labs-interp-list{margin:6px 0 8px;padding-left:18px;font-size:14px;line-height:1.5}
+.labs-interp-box .hint:last-child{margin-bottom:0}

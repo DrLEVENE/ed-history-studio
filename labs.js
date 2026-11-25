@@ -137,6 +137,7 @@
 
   // ---------- Results kept for this encounter ----------
   const kept = {};   // k -> result
+  let interpOn = true;
   function lines() {
     const groups = {};
     Object.values(kept).forEach(r => { const a = BY[r.k]; (groups[a.group] = groups[a.group] || []).push(r); });
@@ -144,13 +145,141 @@
       const f = flagOf(r), a = BY[r.k];
       const lim = r.k === 'trop' && r.range && r.range[1] != null ? ' (assay upper limit ' + r.range[1] + ')' : '';
       return a.name + ' ' + show(r) + (f ? ' (' + f + ')' : '') + lim;
-    }).join(', ') + '.');
+    }).join(', ') + '.').concat((() => {
+      const box = $('labs-interp'), c = Object.keys(kept).length && (!box || box.checked) ? interpret() : [];
+      return c.length ? ['Interpretation:'].concat(c.map(x => '- ' + x)) : [];
+    })());
   }
   // For the scores: value in SI units, and the troponin upper limit from the report.
   function get(k) {
     const r = kept[k];
     if (!r) { if (k === 'urea' && kept.bun) return { si: kept.bun.value / 2.8, value: kept.bun.value, unit: 'mg/dL BUN' }; return null; }
     return { si: r.value * r.toSI, value: r.value, unit: r.unit, cmp: r.cmp, uln: r.rangeFrom === 'report' && r.range ? r.range[1] : null };
+  }
+
+  // ---------- Interpretation ----------
+  // Plain statements about abnormal results and recognised patterns. Descriptive only: no treatment advice.
+  // Thresholds: WHO anaemia grades; European hyponatraemia grades; UK Renal Association hyperkalaemia grades;
+  // JBDS DKA criteria; Winter's formula; R ratio for liver tests; Atlanta criterion for pancreatitis.
+  function interpret() {
+    const sex = $('sex') ? $('sex').value : '';
+    const v = k => { const r = get(k); return r ? r.si : null; };
+    const val = k => kept[k] ? BY[k].name + ' ' + show(kept[k]) : (k === 'urea' && kept.bun ? 'BUN ' + show(kept.bun) : '');
+    const upper = (k, typical) => { const r = kept[k]; return r && r.rangeFrom === 'report' && r.range && r.range[1] != null ? r.range[1] * r.toSI : typical; };
+    const lower = (k, typical) => { const r = kept[k]; return r && r.rangeFrom === 'report' && r.range && r.range[0] != null ? r.range[0] * r.toSI : typical; };
+    // Abnormal means outside the laboratory's own range from the report (typical adult range only when none was printed).
+    const F = k => kept[k] ? flagOf(kept[k]) : '', HI = k => F(k) === 'high', LO = k => F(k) === 'low';
+    const fromReport = k => kept[k] && kept[k].rangeFrom === 'report';
+    const o = [];
+    // Full blood count
+    const hb = v('hb');
+    if (hb != null) {
+      const lo = sex === 'Male' ? 13 : 12;
+      if (fromReport('hb') ? LO('hb') : hb < lo) {
+        let t = 'Anaemia, ' + (hb < 8 ? 'severe' : hb < 11 ? 'moderate' : 'mild') + ' (' + val('hb') + (sex || fromReport('hb') ? '' : '; sex not recorded, female threshold used') + ')';
+        const mcv = v('mcv');
+        if (mcv != null) t += mcv < 80 ? ', microcytic (MCV ' + fmt(mcv) + ' fL)' : mcv > 100 ? ', macrocytic (MCV ' + fmt(mcv) + ' fL)' : ', normocytic';
+        o.push(t + '.');
+      } else if (fromReport('hb') ? HI('hb') : hb > (sex === 'Female' ? 16.5 : 17.5)) o.push('Raised haemoglobin (' + val('hb') + ').');
+    }
+    const wcc = v('wcc'), neut = v('neut');
+    if (HI('wcc')) o.push('Leucocytosis (' + val('wcc') + ')' + (HI('neut') ? ' with neutrophilia (' + val('neut') + ')' : '') + '.');
+    else if (HI('neut')) o.push('Neutrophilia (' + val('neut') + ').');
+    if (LO('neut')) o.push('Neutropenia' + (neut < 0.5 ? ', severe' : '') + ' (' + val('neut') + ').');
+    else if (LO('wcc')) o.push('Leucopenia (' + val('wcc') + ').');
+    const plt = v('plt');
+    if (LO('plt')) o.push('Thrombocytopenia' + (plt < 50 ? ', below 50' : '') + ' (' + val('plt') + ').');
+    else if (HI('plt')) o.push('Thrombocytosis (' + val('plt') + ').');
+    // Sodium and potassium
+    const na = v('na'), k = v('k');
+    if (LO('na')) o.push('Hyponatraemia, ' + (na < 125 ? 'severe' : na < 130 ? 'moderate' : 'mild') + ' (' + val('na') + ').');
+    else if (HI('na')) o.push('Hypernatraemia' + (na > 155 ? ', marked' : '') + ' (' + val('na') + ').');
+    if (LO('k')) o.push('Hypokalaemia' + (k < 2.5 ? ', severe' : k < 3 ? ', moderate' : ', mild') + ' (' + val('k') + ').');
+    else if (HI('k')) o.push('Hyperkalaemia' + (k >= 6.5 ? ', severe' : k >= 6 ? ', moderate' : k >= 5.5 ? ', mild' : '') + ' (' + val('k') + ').');
+    // Kidney function
+    const urea = v('urea'), cr = v('creat'), egfr = v('egfr');
+    if (HI('creat')) o.push('Raised creatinine (' + val('creat') + '): compare with a previous result to stage any acute kidney injury (KDIGO).');
+    if (egfr != null && (fromReport('egfr') ? LO('egfr') : egfr < 60)) o.push('eGFR below 60 (' + val('egfr') + ').');
+    if (urea != null && cr != null && (HI('urea') || HI('bun')) && urea * 1000 / cr > 100) o.push('Urea raised out of proportion to creatinine (' + val('urea') + ', ' + val('creat') + '): seen with dehydration and upper GI bleeding.');
+    else if (HI('urea') || HI('bun')) o.push('Raised urea (' + val('urea') + ').');
+    // Glucose and ketones
+    const glu = v('glu'), ket = v('ket'), ph = v('ph'), hco3 = v('hco3'), pco2 = v('pco2'), lact = v('lact');
+    if (glu != null && (glu < 4 || LO('glu'))) o.push((glu < 4 ? 'Hypoglycaemia' : 'Low glucose') + (glu < 3 ? ', marked' : '') + ' (' + val('glu') + ').');
+    else if (glu != null && glu >= 11.1) o.push('Hyperglycaemia (' + val('glu') + ').');
+    else if (HI('glu')) o.push('Glucose above the laboratory range (' + val('glu') + ').');
+    if (ket != null && (ket >= 0.6 || HI('ket'))) o.push((ket >= 3 ? 'High' : ket >= 1.5 ? 'Raised' : 'Mildly raised') + ' blood ketones (' + val('ket') + ').');
+    if (ket != null && ket >= 3 && glu != null && glu > 11 && ((ph != null && ph < 7.3) || (hco3 != null && hco3 < 15)))
+      o.push('Meets the JBDS biochemical criteria for diabetic ketoacidosis (ketones 3 or more, glucose over 11, and pH below 7.3 or bicarbonate below 15).');
+    // Blood gas
+    if (ph != null) {
+      if (fromReport('ph') ? LO('ph') : ph < 7.35) {
+        const met = hco3 != null && (fromReport('hco3') ? LO('hco3') : hco3 < 22), resp = pco2 != null && (fromReport('pco2') ? HI('pco2') : pco2 > 6);
+        let t = 'Acidaemia (pH ' + fmt(ph) + ')';
+        if (met) {
+          t += ': metabolic acidosis';
+          const exp = (1.5 * hco3 + 8) * 0.133;   // Winter's formula, kPa
+          if (pco2 != null) t += pco2 > exp + 0.3 ? ' with an additional respiratory acidosis (pCO₂ above the expected ' + fmt(Math.round(exp * 10) / 10) + ' kPa)' : pco2 < exp - 0.3 ? ' with an additional respiratory alkalosis (pCO₂ below the expected ' + fmt(Math.round(exp * 10) / 10) + ' kPa)' : ', appropriately compensated';
+        } else if (resp) t += ': respiratory acidosis' + (hco3 != null && hco3 > 29 ? ' with metabolic compensation (chronic or acute-on-chronic)' : '');
+        o.push(t + '.');
+      } else if (fromReport('ph') ? HI('ph') : ph > 7.45) {
+        const t = pco2 != null && pco2 < 4.7 ? ': respiratory alkalosis' : hco3 != null && hco3 > 29 ? ': metabolic alkalosis' : '';
+        o.push('Alkalaemia (pH ' + fmt(ph) + ')' + t + '.');
+      }
+    }
+    if (na != null && v('cl') != null && hco3 != null) {
+      const ag = na - (v('cl') + hco3);
+      if (ag > 16) o.push('Raised anion gap of ' + fmt(Math.round(ag)) + ' (Na − (Cl + HCO₃); usual range about 8 to 16).');
+    }
+    if (HI('lact')) o.push((lact >= 4 ? 'Markedly raised' : 'Raised') + ' lactate (' + val('lact') + ').');
+    // Inflammation
+    const crp = v('crp');
+    if (HI('crp')) o.push((crp > 100 ? 'Markedly raised' : 'Raised') + ' CRP (' + val('crp') + ').');
+    // Liver
+    const alt = v('alt'), alp = v('alp'), altU = upper('alt', 40), alpU = upper('alp', 130);
+    if (HI('alt') || HI('alp')) {
+      if (alt != null && alp != null) {
+        const R = (alt / altU) / (alp / alpU);
+        o.push('Abnormal liver tests, ' + (R >= 5 ? 'hepatocellular' : R <= 2 ? 'cholestatic' : 'mixed') + ' pattern (R ratio ' + fmt(Math.round(R * 10) / 10) + '; ' + val('alt') + ', ' + val('alp') + ').');
+      } else o.push('Raised ' + (HI('alt') ? val('alt') : val('alp')) + '.');
+    }
+    const bili = v('bili'), alb = v('alb');
+    if (HI('bili')) o.push('Raised bilirubin (' + val('bili') + ').');
+    if (LO('alb')) o.push('Low albumin (' + val('alb') + ').');
+    // Calcium, magnesium, phosphate
+    let ca = v('adjca'), calc = false;
+    if (ca == null && v('ca') != null && alb != null) { ca = v('ca') + 0.02 * (40 - alb); calc = true; }
+    if (ca != null) {
+      const cat = calc ? 'calculated adjusted calcium ' + fmt(Math.round(ca * 100) / 100) + ' mmol/L' : val('adjca');
+      if (calc ? ca > 2.6 : HI('adjca')) o.push('Hypercalcaemia' + (ca >= 3.5 ? ', severe' : ca >= 3 ? ', moderate' : '') + ' (' + cat + ').');
+      else if (calc ? ca < 2.2 : LO('adjca')) o.push('Hypocalcaemia' + (ca < 1.9 ? ', marked' : '') + ' (' + cat + ').');
+      else if (calc) o.push('Calculated adjusted calcium ' + fmt(Math.round(ca * 100) / 100) + ' mmol/L (normal).');
+    }
+    const mg = v('mg'), phos = v('phos');
+    if (LO('mg')) o.push('Hypomagnesaemia (' + val('mg') + ').');
+    if (LO('phos')) o.push('Hypophosphataemia (' + val('phos') + ').');
+    else if (HI('phos')) o.push('Hyperphosphataemia (' + val('phos') + ').');
+    // Coagulation
+    const inr = v('inr');
+    if (HI('inr')) o.push('Raised INR (' + fmt(inr) + '): anticoagulant effect, liver disease or coagulopathy.');
+    // Assay-specific results: only against the limit printed on the report
+    const tr = get('trop');
+    if (tr) {
+      if (tr.uln == null) o.push('Troponin ' + show(kept.trop) + ': compare with the assay\'s 99th centile; the report\'s limit was not read.');
+      else if (tr.value > tr.uln) o.push('Troponin above the assay\'s upper limit (' + show(kept.trop) + ', limit ' + tr.uln + ')' + (tr.value > 5 * tr.uln ? ', more than 5 times the limit' : '') + '. Interpret with the time since symptom onset and the change on a repeat sample.');
+      else o.push('Troponin within the assay\'s limit (' + show(kept.trop) + '). A single early result does not exclude myocardial infarction; interpret with the time since symptom onset.');
+    }
+    const ck = get('ck'), ckU = ck && ck.uln != null ? ck.uln : 200;
+    if (ck && ck.value > 5 * ckU) o.push('CK more than 5 times the upper limit (' + show(kept.ck) + '), in the range seen in rhabdomyolysis.');
+    else if (ck && ck.value > ckU) o.push('Raised CK (' + show(kept.ck) + ').');
+    const dd = get('ddim');
+    if (dd && dd.uln != null) o.push(dd.value > dd.uln ? 'D-dimer above the assay cut-off (' + show(kept.ddim) + '): non-specific; it helps exclude VTE only when the clinical probability is low.' : 'D-dimer below the assay cut-off (' + show(kept.ddim) + ').');
+    ['bnp', 'nt'].forEach(x => { const r = get(x); if (r && r.uln != null && r.value > r.uln) o.push(BY[x].name + ' above the assay limit (' + show(kept[x]) + '): supports heart failure as a cause of breathlessness; also raised in renal impairment, atrial fibrillation, PE and sepsis.'); });
+    const lip = get('lip'), amy = get('amyl');
+    if (lip && lip.uln != null && lip.value > 3 * lip.uln) o.push('Lipase more than 3 times the upper limit (' + show(kept.lip) + '): meets the biochemical criterion for acute pancreatitis (revised Atlanta).');
+    else if (amy && amy.value > 3 * (amy.uln != null ? amy.uln : 110)) o.push('Amylase more than 3 times the upper limit (' + show(kept.amyl) + '): meets the biochemical criterion for acute pancreatitis (revised Atlanta).');
+    const a1c = kept.hba1c;
+    if (a1c && ((a1c.unit === '%' && a1c.value >= 6.5) || (a1c.unit !== '%' && a1c.value >= 48))) o.push('HbA1c in the diabetes range (' + show(a1c) + ').');
+    return o;
   }
 
   // ---------- Interface ----------
@@ -244,6 +373,20 @@
       ul.append(li);
     });
     list.append(lbl, ul);
+    const c = interpret();
+    const box = document.createElement('div'); box.className = 'labs-interp-box';
+    const h = document.createElement('span'); h.className = 'lbl'; h.textContent = 'Interpretation';
+    const p = document.createElement('p'); p.className = 'hint'; p.textContent = c.length ? '' : 'No abnormal results or patterns found.';
+    const ul2 = document.createElement('ul'); ul2.className = 'labs-interp-list'; ul2.id = 'labs-interp-list';
+    c.forEach(t => { const li = document.createElement('li'); li.textContent = t; ul2.append(li); });
+    const l = document.createElement('label'); l.className = 'photo-check';
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.id = 'labs-interp'; cb.checked = interpOn;
+    cb.onchange = () => { interpOn = cb.checked; card.dispatchEvent(new Event('change', { bubbles: true })); };
+    l.append(cb, 'Include the interpretation in the note');
+    box.append(h); if (c.length) box.append(ul2); else box.append(p);
+    box.append(l);
+    const src = document.createElement('p'); src.className = 'hint'; src.textContent = 'Worked out on this device. Abnormal means outside your laboratory\'s range read from the report (a typical adult range only where the report shows none). Severity grades and criteria: WHO, KDIGO, JBDS, revised Atlanta. It describes abnormalities; it does not recommend treatment.';
+    box.append(src); list.append(box);
   }
 
   $('labs-btn').onclick = () => { msg.textContent = ''; file.click(); };
@@ -252,6 +395,8 @@
   $('labs-textbtn').onclick = () => { const t = $('labs-text').value; if (t.trim()) { fromText(t); $('labs-text').value = ''; } };
 
   window.edLabLines = lines;
-  window.edLabs = { parse, get, kept, flagOf, fromText };
-  window.edLabsClear = () => { for (const k in kept) delete kept[k]; closePanel(); msg.textContent = ''; renderKept(); };
+  window.edLabs = { parse, get, kept, flagOf, fromText, interpret };
+  // Sex affects anaemia thresholds: refresh the list when it changes.
+  document.addEventListener('click', e => { if (Object.keys(kept).length && e.target.closest && e.target.closest('#intro')) setTimeout(renderKept, 0); });
+  window.edLabsClear = () => { interpOn = true; for (const k in kept) delete kept[k]; closePanel(); msg.textContent = ''; renderKept(); };
 })();

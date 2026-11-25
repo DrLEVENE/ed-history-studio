@@ -1,5 +1,18 @@
 # Changelog
 
+## Version 57 — 25 November 2026
+- Lab interpretation. After the results in the Investigations card, and in the note under INVESTIGATIONS, an "Interpretation" list describes what is abnormal. It covers:
+  - Anaemia with WHO severity and MCV type; high or low white cells, neutrophils and platelets.
+  - Sodium and potassium graded; raised creatinine (compare with baseline, KDIGO); urea out of proportion to creatinine.
+  - Glucose and ketones, and whether the JBDS DKA criteria are met.
+  - Blood gas: acidaemia or alkalaemia with metabolic or respiratory cause, compensation by Winter's formula, anion gap, lactate.
+  - CRP; liver pattern (hepatocellular, cholestatic or mixed, by R ratio), bilirubin, albumin.
+  - Calcium, with adjusted calcium calculated from albumin when not reported; magnesium; phosphate; INR.
+  - Troponin, CK, D-dimer, BNP and lipase or amylase, against the assay limit on the report.
+- Abnormal means outside the laboratory's own reference range read from the report. A typical adult range is used only when the report shows none, and that is labelled. Severity grades and named criteria use their published cut-offs.
+- Descriptive only: no treatment advice. A tick box leaves the interpretation out of the note.
+- 3 new automated checks (92 in total).
+
 ## Version 56 — 25 November 2026
 Wording fixes found in a full test encounter (fictional 64-year-old man with chest pain, obs from a screenshot, bloods from a pasted lab report):
 - Radiation sites are written in lower case ("left arm and jaw", not "Jaw").

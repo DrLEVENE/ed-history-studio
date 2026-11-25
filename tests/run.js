@@ -358,6 +358,19 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   check('Diagnosis: diagnoses ruled out by sex are not offered (no testicular torsion for a woman)', sexSet === 'Female' && !/Testicular torsion/.test(await g.textContent('#dx-out')), sexSet);
   const rulesOk = await g.evaluate(() => Object.keys(window.edDx.RULES).length);
   check('Diagnosis: rules cover every presentation except sexual assault', rulesOk === (await g.$$eval('#condition option', o => o.filter(x => x.value).length)) - 1, String(rulesOk));
+  // 21. Lab interpretation against the laboratory's own ranges
+  await clearG(); await g.selectOption('#condition', 'DKA');
+  await g.fill('#labs-text', 'Hb 9.2 g/dL (13.0-17.0)\nMCV 72 fL (80-100)\nSodium 127 mmol/L (135-145)\nPotassium 6.2 mmol/L (3.5-5.3)\nChloride 100 mmol/L (98-107)\nGlucose 22.1 mmol/L (3.9-7.8)\nKetones 4.2 mmol/L (<0.6)\npH 7.18 (7.35-7.45)\npCO2 3.1 kPa (4.7-6.0)\nHCO3 9 mmol/L (22-29)\nCalcium 2.05 mmol/L (2.20-2.60)\nAlbumin 31 g/L (35-50)');
+  await g.click('#labs-textbtn'); await g.click('#labs-add'); await g.waitForTimeout(500);
+  let it = await g.inputValue('#output');
+  check('Lab interpretation: grades and patterns go into the note under Investigations', /Interpretation:\n- Anaemia, moderate \(Hb 9\.2 g\/dL\), microcytic/.test(it) && /Hyponatraemia, moderate/.test(it) && /Hyperkalaemia, moderate/.test(it) && /Meets the JBDS biochemical criteria for diabetic ketoacidosis/.test(it) && /metabolic acidosis, appropriately compensated/.test(it) && /Raised anion gap of 18/.test(it) && /Calculated adjusted calcium 2\.23 mmol\/L \(normal\)/.test(it), it.slice(it.indexOf('Interpretation')));
+  await clearG(); await g.selectOption('#condition', 'Fever');
+  await g.fill('#labs-text', 'Sodium 133 mmol/L (133-146)\nPotassium 5.6 mmol/L (3.5-5.8)\nWBC 10.8 (4.0-10.0)'); await g.click('#labs-textbtn'); await g.click('#labs-add'); await g.waitForTimeout(500);
+  it = await g.inputValue('#output');
+  check('Lab interpretation: abnormal means outside the laboratory\'s own range from the report', !/Hyponatraemia|Hyperkalaemia/.test(it) && /Leucocytosis \(WCC 10\.8/.test(it), it.slice(it.indexOf('INVESTIGATIONS')));
+  await g.uncheck('#labs-interp'); await g.waitForTimeout(500);
+  check('Lab interpretation: can be left out of the note', !/Interpretation:/.test(await g.inputValue('#output')));
+  await clearG();
   check('No feature sends anything off the device', leaving.length === 0, leaving.join(', '));
   server.close();
 

@@ -39,3 +39,5 @@ Version 54:
 - (Version 54's AI diagnosis support was removed in version 55.)
 
 Version 55: ai.js is gone. Dr Levene asked for no AI. dx.js holds RULES per presentation as D(name, prior, [[token, weight]], distinguishing tests, must-not-miss reason). Tokens: s: and s-: (symptom present or denied), h: (history chip), e: (exam chip), o: (observation), l: (lab in SI units, or >uln for report limits), a: (age), x: (sex). Rule labels must match the page's wording exactly. Run tools/dxcheck-style validation (extract every presentation's symptoms and chips, then compare) after editing either app.js content or dx.js. A score more than 4 below its prior means the record rules it out: it is not offered. edImpression() feeds IMPRESSION with ticked names only.
+
+Version 57: labs.js interpret() builds the Interpretation lines. Every "abnormal" test goes through flagOf(), so the laboratory's own range from the report decides; typical ranges are a labelled fallback. Severity grades (WHO, Na and K grades, DKA criteria, Winter's formula, anion gap, R ratio, Atlanta) use fixed published cut-offs. Keep it descriptive: no treatment advice.
