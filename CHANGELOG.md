@@ -1,5 +1,16 @@
 # Changelog
 
+## Version 58 — 25 November 2026
+- New presentation: Dementia, for a person with known or suspected dementia who has deteriorated, or whose care at home has broken down.
+  - History: who is giving it, type of dementia, usual baseline, what has changed and since when, onset and course, behaviour, function compared with usual, recent medicine changes, bowels and urine, living situation, carer coping, concerns about neglect or harm, and capacity, advance care plan and ceiling of treatment.
+  - 19 associated symptoms.
+  - Examination: alertness, attention and orientation; hydration and nutrition; signs of an acute cause (palpable bladder, faecal loading, chest crackles, suprapubic tenderness, pain on movement); injuries, skin and pressure areas; neurology.
+  - Bedside reminder: delirium first, its common causes, subdural haematoma after falls, antipsychotic sensitivity in Lewy body dementia, carer and safeguarding questions, capacity. Sources: NICE NG97 and CG103, the 4AT.
+- Suggested scores: 4AT, NEWS2, GCS.
+- Diagnosis support for Dementia ranks 13 diagnoses: delirium; infection; retention or constipation; medicines; metabolic causes; subdural haematoma; stroke; pain; progression of dementia; behavioural symptoms; carer strain; neglect or abuse; depression.
+- Eponyms (Alzheimer, Lewy, Parkinson and others) keep their capital letter in the note.
+- 2 new automated checks (94 in total). Needs clinical review.
+
 ## Version 57 — 25 November 2026
 - Lab interpretation. After the results in the Investigations card, and in the note under INVESTIGATIONS, an "Interpretation" list describes what is abnormal. It covers:
   - Anaemia with WHO severity and MCV type; high or low white cells, neutrophils and platelets.

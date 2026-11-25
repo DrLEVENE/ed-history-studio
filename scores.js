@@ -204,7 +204,7 @@
     'Difficulty swallowing': ['mcisaac'], 'Fever': ['news2', 'qsofa'], 'UTI / Dysuria': ['news2', 'qsofa'], 'Surgical site infection': ['news2', 'qsofa'],
     'Rash': ['news2', 'qsofa'], 'Anaphylaxis': ['news2', 'gcs'], 'DKA': ['news2', 'gcs'], 'Vomiting & diarrhoea': ['news2'],
     'Suspected DVT': ['wellsdvt', 'wellspe'], 'Leg swelling': ['wellsdvt'], 'Upper GI bleed': ['gbs', 'news2'],
-    'Decreased responsiveness — elderly': ['gcs', 'fourat', 'news2'], 'Acute confusional state': ['fourat', 'gcs', 'news2'],
+    'Decreased responsiveness — elderly': ['gcs', 'fourat', 'news2'], 'Acute confusional state': ['fourat', 'gcs', 'news2'], 'Dementia': ['fourat', 'news2', 'gcs'],
     'Unwitnessed fall': ['gcs', 'fourat'], 'Fall from height': ['gcs'], 'Motor vehicle / motorbike collision': ['gcs'], 'Physical assault': ['gcs'],
     'Seizure': ['gcs'], 'Toxic ingestion': ['gcs', 'news2'], 'Behavioural change': ['fourat', 'gcs'], 'Suspected stroke': ['gcs'], 'Syncope': ['news2']
   };

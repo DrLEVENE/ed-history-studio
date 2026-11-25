@@ -371,6 +371,15 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   await g.uncheck('#labs-interp'); await g.waitForTimeout(500);
   check('Lab interpretation: can be left out of the note', !/Interpretation:/.test(await g.inputValue('#output')));
   await clearG();
+  // 22. Dementia presentation
+  await clearG(); await g.selectOption('#condition', 'Dementia'); await g.fill('#age', '84');
+  await g.fill('#pc0', 'increased confusion over 2 days');
+  for (const h of ['Alzheimer disease', 'Over a day or two', 'Fluctuating through the day']) await H(h);
+  await SY('Fever'); await g.evaluate(() => { const l = [...document.querySelectorAll('#exam label')].find(l => l.textContent.trim() === 'Inattentive'); l.querySelector('input').click(); });
+  top3 = await dxTop(); const dn = await g.inputValue('#output');
+  check('Dementia: an acute fluctuating change with fever ranks delirium first, then infection', top3[0] === 'Delirium superimposed on dementia' && top3[1] === 'Infection (urinary, chest or skin)', top3.join(' > '));
+  check('Dementia: the note keeps eponyms capitalised and suggests 4AT', /The dementia is described as Alzheimer disease\./.test(dn) && (await g.locator('#score-suggest button').allTextContents())[0] === '4AT', dn.slice(0, 400));
+  await clearG();
   check('No feature sends anything off the device', leaving.length === 0, leaving.join(', '));
   server.close();
 
