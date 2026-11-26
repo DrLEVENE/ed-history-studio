@@ -312,7 +312,8 @@ function openingHistory(complaints) {
   const age=$('age').value.trim(), unit=$('ageunit').value, sex=$('sex').value;
   const adult=age && unit==='years' && Number(age)>=18;
   const noun=adult && sex==='Male'?'man':adult && sex==='Female'?'woman':sex?sex.toLowerCase()+' patient':'patient';
-  let subject=age?'This '+ageWords(age,unit)+' '+noun:sex?'This '+noun:'The patient';
+  // Opens with the demographics: "64-year-old man presents with…".
+  let subject=age?ageWords(age,unit)+' '+noun:sex?noun.charAt(0).toUpperCase()+noun.slice(1):'The patient';
   const history=cleanClinical($('comorb').value);
   if(history) subject+=' with a history of '+lowerClinicalStart(history);
   const medications=cleanClinical($('regular-meds').value);

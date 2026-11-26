@@ -1,5 +1,19 @@
 # Changelog
 
+## Version 59 — 26 November 2026
+- The HPC opens with the demographics ("64-year-old man presents with…") instead of "This 64-year-old man…".
+- New Calculations section under INVESTIGATIONS, in the card and in the note, worked from the results and age and sex. Each line names its formula:
+  - Sodium corrected for glucose (Hillier). A low sodium explained by hyperglycaemia is said so in the interpretation.
+  - Calculated serum osmolality (2 × Na + glucose + urea), and the osmolar gap when a measured osmolality is reported.
+  - JBDS DKA criteria with the markers of severe DKA (ketones over 6, bicarbonate under 5, pH under 7.0, potassium under 3.5, anion gap over 16, and heart rate, systolic BP and SpO₂ from the observations). JBDS HHS criteria, and a mixed DKA and HHS picture.
+  - Anion gap, corrected for albumin, and the delta ratio.
+  - eGFR by CKD-EPI 2021 (creatinine, age, sex, without race) when the report gives none, with the CKD stage range and a warning that it is not valid in AKI. Urea:creatinine ratio, or BUN:creatinine for US units.
+  - Liver: R ratio, AST:ALT ratio, and ALP with GGT (liver or bone source).
+  - Adjusted calcium from albumin.
+- Measured osmolality is now read from lab reports.
+- Abnormal still means outside the laboratory's own range from the report.
+- 3 new automated checks (97 in total).
+
 ## Version 58 — 25 November 2026
 - New presentation: Dementia, for a person with known or suspected dementia who has deteriorated, or whose care at home has broken down.
   - History: who is giving it, type of dementia, usual baseline, what has changed and since when, onset and course, behaviour, function compared with usual, recent medicine changes, bowels and urine, living situation, carer coping, concerns about neglect or harm, and capacity, advance care plan and ceiling of treatment.

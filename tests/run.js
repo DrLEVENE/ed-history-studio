@@ -363,7 +363,7 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   await g.fill('#labs-text', 'Hb 9.2 g/dL (13.0-17.0)\nMCV 72 fL (80-100)\nSodium 127 mmol/L (135-145)\nPotassium 6.2 mmol/L (3.5-5.3)\nChloride 100 mmol/L (98-107)\nGlucose 22.1 mmol/L (3.9-7.8)\nKetones 4.2 mmol/L (<0.6)\npH 7.18 (7.35-7.45)\npCO2 3.1 kPa (4.7-6.0)\nHCO3 9 mmol/L (22-29)\nCalcium 2.05 mmol/L (2.20-2.60)\nAlbumin 31 g/L (35-50)');
   await g.click('#labs-textbtn'); await g.click('#labs-add'); await g.waitForTimeout(500);
   let it = await g.inputValue('#output');
-  check('Lab interpretation: grades and patterns go into the note under Investigations', /Interpretation:\n- Anaemia, moderate \(Hb 9\.2 g\/dL\), microcytic/.test(it) && /Hyponatraemia, moderate/.test(it) && /Hyperkalaemia, moderate/.test(it) && /Meets the JBDS biochemical criteria for diabetic ketoacidosis/.test(it) && /metabolic acidosis, appropriately compensated/.test(it) && /Raised anion gap of 18/.test(it) && /Calculated adjusted calcium 2\.23 mmol\/L \(normal\)/.test(it), it.slice(it.indexOf('Interpretation')));
+  check('Lab interpretation: grades and patterns go into the note under Investigations', /Interpretation:\n- Anaemia, moderate \(Hb 9\.2 g\/dL\), microcytic/.test(it) && /Hyponatraemia, moderate/.test(it) && /Hyperkalaemia, moderate/.test(it) && /Meets the JBDS biochemical criteria for diabetic ketoacidosis/.test(it) && /metabolic acidosis, appropriately compensated/.test(it) && /Anion gap 18 mmol\/L/.test(it) && /Calculations:\n- Corrected sodium/.test(it) && /Adjusted calcium 2\.23 mmol\/L/.test(it), it.slice(it.indexOf('Interpretation')));
   await clearG(); await g.selectOption('#condition', 'Fever');
   await g.fill('#labs-text', 'Sodium 133 mmol/L (133-146)\nPotassium 5.6 mmol/L (3.5-5.8)\nWBC 10.8 (4.0-10.0)'); await g.click('#labs-textbtn'); await g.click('#labs-add'); await g.waitForTimeout(500);
   it = await g.inputValue('#output');
@@ -371,6 +371,17 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   await g.uncheck('#labs-interp'); await g.waitForTimeout(500);
   check('Lab interpretation: can be left out of the note', !/Interpretation:/.test(await g.inputValue('#output')));
   await clearG();
+  // 21b. Lab calculations
+  await clearG(); await g.selectOption('#condition', 'DKA'); await g.fill('#pc0', 'vomiting'); await g.fill('#age', '24');
+  await g.locator('#intro button:visible, #intro label:visible', { hasText: /^Female$/ }).first().click();
+  await g.fill('#labs-text', 'Sodium 129 mmol/L (135-145)\nPotassium 3.2 mmol/L (3.5-5.3)\nChloride 98 mmol/L (98-107)\nUrea 8.9 mmol/L (2.5-7.8)\nCreatinine 118 umol/L (45-90)\nGlucose 26.4 mmol/L (3.9-7.8)\nKetones 6.4 mmol/L (<0.6)\npH 6.98 (7.35-7.45)\nHCO3 4 mmol/L (22-29)\nAlbumin 38 g/L (35-50)');
+  await g.click('#labs-textbtn'); await g.click('#labs-add'); await g.waitForTimeout(500);
+  it = await g.inputValue('#output');
+  check('Lab calculations: corrected sodium, osmolality, anion gap, delta ratio and eGFR', /Corrected sodium 138 mmol\/L/.test(it) && /Calculated serum osmolality 293 mOsm\/kg/.test(it) && /Anion gap 27 mmol\/L .*corrected for albumin 27\.5: raised/.test(it) && /Delta ratio 0\.8: consistent with a pure raised anion gap acidosis/.test(it) && /Calculated eGFR 57 mL\/min\/1\.73m² \(CKD-EPI 2021/.test(it), it.slice(it.indexOf('Calculations')));
+  check('Lab calculations: JBDS severe DKA markers and sodium explained by glucose', /Markers of severe DKA present \(JBDS\): ketones over 6, bicarbonate under 5, pH under 7\.0, potassium under 3\.5, anion gap over 16/.test(it) && /so the low sodium is explained by the high glucose/.test(it));
+  check('HPC opens with the demographics, not "This"', /\nHPC:\n24-year-old woman presents with vomiting/.test(it), it.slice(0, 200));
+  await clearG();
+
   // 22. Dementia presentation
   await clearG(); await g.selectOption('#condition', 'Dementia'); await g.fill('#age', '84');
   await g.fill('#pc0', 'increased confusion over 2 days');

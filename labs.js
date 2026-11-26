@@ -59,6 +59,7 @@
     ['pt', 'PT', 'Coagulation', [/\bprothrombin\s*time\b/i, /\bPT\b/], [U('s', null, 1, null)]],
     ['aptt', 'APTT', 'Coagulation', /\b(?:a?PTT|APTT|activated\s*partial\s*thromboplastin\s*time)\b/i, [U('s', null, 1, null)]],
     ['ddim', 'D-dimer', 'Coagulation', /\bD[-\s]?dimer\b/i, [U('', null, 1, null), U('mg/L FEU', null, 1, null), U('ng/mL FEU', null, 1, null), U('µg/mL FEU', null, 1, null), U('ng/mL DDU', null, 1, null)]],
+    ['osm', 'measured osmolality', 'U&E', /\b(?:serum\s*|plasma\s*)?osmolality\b|\bosmo?\b(?!lar)/i, [U('mOsm/kg', null, 1, [275, 295])]],
     ['hcg', 'β-hCG', 'Other', /\b(?:β|beta|b)[-\s]?hCG\b|\bhCG\b/i, [U('IU/L', null, 1, null)]]
   ].map(([k, name, group, rx, units]) => ({ k, name, group, rx, units }));
   const BY = Object.fromEntries(A.map(a => [a.k, a]));
@@ -147,7 +148,8 @@
       return a.name + ' ' + show(r) + (f ? ' (' + f + ')' : '') + lim;
     }).join(', ') + '.').concat((() => {
       const box = $('labs-interp'), c = Object.keys(kept).length && (!box || box.checked) ? interpret() : [];
-      return c.length ? ['Interpretation:'].concat(c.map(x => '- ' + x)) : [];
+      const k2 = Object.keys(kept).length && (!box || box.checked) ? calculations() : [];
+      return (c.length ? ['Interpretation:'].concat(c.map(x => '- ' + x)) : []).concat(k2.length ? ['Calculations:'].concat(k2.map(x => '- ' + x)) : []);
     })());
   }
   // For the scores: value in SI units, and the troponin upper limit from the report.
@@ -161,6 +163,84 @@
   // Plain statements about abnormal results and recognised patterns. Descriptive only: no treatment advice.
   // Thresholds: WHO anaemia grades; European hyponatraemia grades; UK Renal Association hyperkalaemia grades;
   // JBDS DKA criteria; Winter's formula; R ratio for liver tests; Atlanta criterion for pancreatitis.
+  // ---------- Calculations ----------
+  // Worked from the results kept, plus age and sex from the page. Each line names its formula.
+  function calculations() {
+    const v = k => { const r = get(k); return r ? r.si : null; };
+    const sex = $('sex') ? $('sex').value : '';
+    const ctx = window.edScores && window.edScores.context ? window.edScores.context() : {};
+    const age = ctx.age, c = [], r1 = x => Math.round(x * 10) / 10, r0 = x => Math.round(x);
+    const na = v('na'), glu = v('glu'), urea = v('urea'), cr = v('creat'), cl = v('cl'), hco3 = v('hco3'), alb = v('alb'), k = v('k'), ket = v('ket'), ph = v('ph');
+    // Sodium corrected for glucose
+    if (na != null && glu != null && glu > 10) c.push('Corrected sodium ' + r0(na + 2.4 * (glu - 5.5) / 5.5) + ' mmol/L (Hillier: add 2.4 for every 5.5 mmol/L of glucose above 5.5).');
+    // Osmolality
+    let osm = null;
+    if (na != null && glu != null && urea != null) {
+      osm = 2 * na + glu + urea;
+      c.push('Calculated serum osmolality ' + r0(osm) + ' mOsm/kg (2 × Na + glucose + urea; usual 275–295)' + (osm >= 320 ? ', 320 or more' : '') + '.');
+      const m = v('osm');
+      if (m != null) { const gap = m - osm; c.push('Osmolar gap ' + r0(gap) + ' (measured ' + r0(m) + ' minus calculated)' + (gap > 10 ? ': raised (over 10), seen with toxic alcohols, ethanol, mannitol and severe ketoacidosis or lactic acidosis.' : '.')); }
+    } else if (na != null && glu != null) c.push('Serum osmolality cannot be calculated without urea.');
+    // DKA and HHS (JBDS)
+    const dka = ket != null && ket >= 3 && glu != null && glu > 11 && ((ph != null && ph < 7.3) || (hco3 != null && hco3 < 15));
+    const hhs = glu != null && glu >= 30 && osm != null && osm >= 320 && (ket == null || ket < 3) && (ph == null || ph >= 7.3) && (hco3 == null || hco3 >= 15);
+    let ag = null;
+    if (na != null && cl != null && hco3 != null) ag = na - (cl + hco3);
+    if (dka) {
+      const sev = [];
+      if (ket > 6) sev.push('ketones over 6');
+      if (hco3 != null && hco3 < 5) sev.push('bicarbonate under 5');
+      if (ph != null && ph < 7) sev.push('pH under 7.0');
+      if (k != null && k < 3.5) sev.push('potassium under 3.5');
+      if (ag != null && ag > 16) sev.push('anion gap over 16');
+      if (ctx.sbp != null && ctx.sbp < 90) sev.push('systolic BP under 90');
+      if (ctx.hr != null && (ctx.hr > 100 || ctx.hr < 60)) sev.push('heart rate ' + ctx.hr);
+      if (ctx.spo2 != null && ctx.spo2 < 92) sev.push('SpO₂ under 92%');
+      c.push('DKA: meets the JBDS biochemical criteria' + (sev.length ? '. Markers of severe DKA present (JBDS): ' + sev.join(', ') + '.' : '; none of the JBDS markers of severe DKA found in the results and observations.'));
+      if (glu >= 30 && osm != null && osm >= 320) c.push('Glucose 30 or more with osmolality 320 or more as well: features of both DKA and HHS (mixed picture).');
+    } else if (hhs) c.push('HHS: meets the JBDS biochemical criteria (glucose 30 or more, osmolality 320 or more, ketones under 3, no acidosis). Hypovolaemia is a clinical criterion.');
+    else if (glu != null && glu > 11 && ket == null) c.push('Glucose over 11 without a ketone result: DKA cannot be assessed; check blood ketones.');
+    // Anion gap, albumin-corrected, delta ratio
+    if (ag != null) {
+      let t = 'Anion gap ' + r0(ag) + ' mmol/L (Na − (Cl + HCO₃); usual about 8–16)';
+      let agc = ag;
+      if (alb != null) { agc = ag + 0.25 * (40 - alb); t += '; corrected for albumin ' + r1(agc); }
+      if (agc > 16) t += ': raised';
+      c.push(t + '.');
+      if (agc > 16 && hco3 < 24) {
+        const dr = r1((agc - 12) / (24 - hco3));
+        c.push('Delta ratio ' + r1(dr) + ': ' + (dr < 0.4 ? 'suggests a normal anion gap (hyperchloraemic) acidosis' : dr < 0.8 ? 'suggests a mixed raised and normal anion gap acidosis' : dr <= 2 ? 'consistent with a pure raised anion gap acidosis' : 'suggests a raised anion gap acidosis with a coexisting metabolic alkalosis') + '.');
+      }
+    }
+    // Kidney function
+    const eg = kept.egfr;
+    if (eg) {
+      const e = eg.value * eg.toSI;
+      c.push('eGFR ' + show(eg) + ' (reported): ' + stage(e) + '.');
+    } else if (cr != null && age != null && age >= 18 && (sex === 'Male' || sex === 'Female')) {
+      const scr = cr / 88.4, f = sex === 'Female', kap = f ? 0.7 : 0.9, al = f ? -0.241 : -0.302;
+      const e = 142 * Math.pow(Math.min(scr / kap, 1), al) * Math.pow(Math.max(scr / kap, 1), -1.2) * Math.pow(0.9938, age) * (f ? 1.012 : 1);
+      c.push('Calculated eGFR ' + r0(e) + ' mL/min/1.73m² (CKD-EPI 2021 creatinine equation, age ' + Math.floor(age) + ', ' + sex.toLowerCase() + '): ' + stage(e) + '. Not valid while creatinine is changing, as in acute kidney injury.');
+    } else if (cr != null) c.push('eGFR not calculated: needs age (18 or over) and sex.');
+    if (urea != null && cr != null) {
+      const bun = kept.bun, crMg = kept.creat && kept.creat.unit === 'mg/dL';
+      if (bun && crMg) { const rr = bun.value / kept.creat.value; c.push('BUN:creatinine ratio ' + r0(rr) + (rr > 20 ? ' (over 20, a pre-renal pattern)' : '') + '.'); }
+      else { const rr = urea * 1000 / cr; c.push('Urea:creatinine ratio ' + r0(rr) + (rr > 100 ? ' (over 100: a pre-renal pattern, or upper GI bleeding)' : '') + '.'); }
+    }
+    // Liver
+    const alt = v('alt'), ast = v('ast'), alp = v('alp'), ggt = v('ggt');
+    const up = (kk, typ) => { const r = kept[kk]; return r && r.rangeFrom === 'report' && r.range && r.range[1] != null ? r.range[1] * r.toSI : typ; };
+    const hiK = kk => kept[kk] && flagOf(kept[kk]) === 'high';
+    if (alt != null && alp != null && (hiK('alt') || hiK('alp'))) { const R = (alt / up('alt', 40)) / (alp / up('alp', 130)); c.push('R ratio ' + r1(R) + ' ((ALT ÷ its upper limit) ÷ (ALP ÷ its upper limit)): ' + (R >= 5 ? 'hepatocellular' : R <= 2 ? 'cholestatic' : 'mixed') + ' pattern.'); }
+    if (ast != null && alt != null && (hiK('ast') || hiK('alt'))) { const q = ast / alt; c.push('AST:ALT ratio ' + r1(q) + (q > 2 ? ' (over 2: often seen in alcohol-related liver disease)' : q < 1 ? ' (under 1: more typical of viral or fatty liver disease)' : '') + '.'); }
+    if (hiK('alp') && ggt != null) c.push(hiK('ggt') ? 'ALP and GGT both raised: the ALP is likely to be from the liver or biliary tree.' : 'ALP raised with a normal GGT: the ALP may be from bone.');
+    // Calcium
+    const ca = v('ca');
+    if (!kept.adjca && ca != null && alb != null) c.push('Adjusted calcium ' + (Math.round((ca + 0.02 * (40 - alb)) * 100) / 100) + ' mmol/L (calcium + 0.02 × (40 − albumin)).');
+    return c;
+  }
+  function stage(e) { return e >= 90 ? 'stage G1 range' : e >= 60 ? 'stage G2 range' : e >= 45 ? 'stage G3a range' : e >= 30 ? 'stage G3b range' : e >= 15 ? 'stage G4 range' : 'stage G5 range'; }
+
   function interpret() {
     const sex = $('sex') ? $('sex').value : '';
     const v = k => { const r = get(k); return r ? r.si : null; };
@@ -192,7 +272,8 @@
     else if (HI('plt')) o.push('Thrombocytosis (' + val('plt') + ').');
     // Sodium and potassium
     const na = v('na'), k = v('k');
-    if (LO('na')) o.push('Hyponatraemia, ' + (na < 125 ? 'severe' : na < 130 ? 'moderate' : 'mild') + ' (' + val('na') + ').');
+    const gl0 = v('glu'), cNa = na != null && gl0 != null && gl0 > 10 ? na + 2.4 * (gl0 - 5.5) / 5.5 : null;
+    if (LO('na')) o.push('Hyponatraemia, ' + (na < 125 ? 'severe' : na < 130 ? 'moderate' : 'mild') + ' (' + val('na') + ')' + (cNa != null && cNa >= 135 ? '; corrected for glucose it is ' + Math.round(cNa) + ', so the low sodium is explained by the high glucose' : '') + '.');
     else if (HI('na')) o.push('Hypernatraemia' + (na > 155 ? ', marked' : '') + ' (' + val('na') + ').');
     if (LO('k')) o.push('Hypokalaemia' + (k < 2.5 ? ', severe' : k < 3 ? ', moderate' : ', mild') + ' (' + val('k') + ').');
     else if (HI('k')) o.push('Hyperkalaemia' + (k >= 6.5 ? ', severe' : k >= 6 ? ', moderate' : k >= 5.5 ? ', mild' : '') + ' (' + val('k') + ').');
@@ -226,10 +307,6 @@
         o.push('Alkalaemia (pH ' + fmt(ph) + ')' + t + '.');
       }
     }
-    if (na != null && v('cl') != null && hco3 != null) {
-      const ag = na - (v('cl') + hco3);
-      if (ag > 16) o.push('Raised anion gap of ' + fmt(Math.round(ag)) + ' (Na − (Cl + HCO₃); usual range about 8 to 16).');
-    }
     if (HI('lact')) o.push((lact >= 4 ? 'Markedly raised' : 'Raised') + ' lactate (' + val('lact') + ').');
     // Inflammation
     const crp = v('crp');
@@ -252,7 +329,6 @@
       const cat = calc ? 'calculated adjusted calcium ' + fmt(Math.round(ca * 100) / 100) + ' mmol/L' : val('adjca');
       if (calc ? ca > 2.6 : HI('adjca')) o.push('Hypercalcaemia' + (ca >= 3.5 ? ', severe' : ca >= 3 ? ', moderate' : '') + ' (' + cat + ').');
       else if (calc ? ca < 2.2 : LO('adjca')) o.push('Hypocalcaemia' + (ca < 1.9 ? ', marked' : '') + ' (' + cat + ').');
-      else if (calc) o.push('Calculated adjusted calcium ' + fmt(Math.round(ca * 100) / 100) + ' mmol/L (normal).');
     }
     const mg = v('mg'), phos = v('phos');
     if (LO('mg')) o.push('Hypomagnesaemia (' + val('mg') + ').');
@@ -382,8 +458,10 @@
     const l = document.createElement('label'); l.className = 'photo-check';
     const cb = document.createElement('input'); cb.type = 'checkbox'; cb.id = 'labs-interp'; cb.checked = interpOn;
     cb.onchange = () => { interpOn = cb.checked; card.dispatchEvent(new Event('change', { bubbles: true })); };
-    l.append(cb, 'Include the interpretation in the note');
+    l.append(cb, 'Include the interpretation and calculations in the note');
     box.append(h); if (c.length) box.append(ul2); else box.append(p);
+    const cs = calculations();
+    if (cs.length) { const h2 = document.createElement('span'); h2.className = 'lbl'; h2.textContent = 'Calculations'; const ul3 = document.createElement('ul'); ul3.className = 'labs-interp-list'; ul3.id = 'labs-calc-list'; cs.forEach(t => { const li = document.createElement('li'); li.textContent = t; ul3.append(li); }); box.append(h2, ul3); }
     box.append(l);
     const src = document.createElement('p'); src.className = 'hint'; src.textContent = 'Worked out on this device. Abnormal means outside your laboratory\'s range read from the report (a typical adult range only where the report shows none). Severity grades and criteria: WHO, KDIGO, JBDS, revised Atlanta. It describes abnormalities; it does not recommend treatment.';
     box.append(src); list.append(box);
@@ -395,8 +473,9 @@
   $('labs-textbtn').onclick = () => { const t = $('labs-text').value; if (t.trim()) { fromText(t); $('labs-text').value = ''; } };
 
   window.edLabLines = lines;
-  window.edLabs = { parse, get, kept, flagOf, fromText, interpret };
+  window.edLabs = { parse, get, kept, flagOf, fromText, interpret, calculations };
   // Sex affects anaemia thresholds: refresh the list when it changes.
   document.addEventListener('click', e => { if (Object.keys(kept).length && e.target.closest && e.target.closest('#intro')) setTimeout(renderKept, 0); });
+  document.addEventListener('input', e => { if (Object.keys(kept).length && e.target && /^(age|ageunit)$|-v-/.test(e.target.id || '')) { clearTimeout(window.__labsT); window.__labsT = setTimeout(renderKept, 300); } });
   window.edLabsClear = () => { interpOn = true; for (const k in kept) delete kept[k]; closePanel(); msg.textContent = ''; renderKept(); };
 })();
