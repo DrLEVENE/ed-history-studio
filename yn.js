@@ -11,7 +11,9 @@
   const OPTS = [['Y', 'Yes'], ['N', 'No'], ['NA', 'Not applicable']];
 
   // Descriptive questions have no sensible "no" answer: they get Y and N/A only.
-  const DESCRIPTIVE = /^(Duration|Exact|Time to|Time of|Site|Character|Course|Measured|Onset|Frequency|How |Who |What |When |Where |Usual|Baseline|Last |Intake|Child:|Fever pattern|Analgesic \/ triptan days|Severity|Location|Mechanism|Amount|Volume|Colour|Number of|Weight|Height|LMP)/i;
+  const DESCRIPTIVE = /^(Duration|Exact|Time to|Time of|Site|Character|Course|Measured|Onset|Frequency|How |Who |What |When |Where |Usual|Baseline|Last |Intake|Child:|Fever pattern|Analgesic \/ triptan days|Severity|Location|Mechanism|Amount|Volume|Colour|Number of|Weight|Height|LMP|Timing|Pain site|Specific examples|Substance timing|Trigger details|Where found|Impact|Prehospital|Menstrual|Collateral|Object|Lump history|The )/i;
+  // Questions about a status, details, dates, plans or timings: "no" is not a meaningful answer either.
+  const NO_NEGATIVE = /\b(status|details?|since|date|plan|agreed|who changes|time to|pack-years|sleep|baseline|regimen|usual|discussed|documented|living|lives with|consent|chaperone|tetanus|duration|relationship|referral|follow-up|capacity|wound care|mode|gestation|relation to|post-event|rash sensation|response|adherence|quantity|names|site and side|intake|output|onset|circumstances|sensation|lesion|mood|menopause|soaked|child or vulnerable|completed treatment|culture|weight-bearing|severity|alternative|breakage|functional effect|before fall|preceding collision)\b/i;
   function buttons(name, onPick, opts) {
     const g = document.createElement('span'); g.className = 'yn'; g.setAttribute('role', 'group'); g.setAttribute('aria-label', name);
     (opts || OPTS).forEach(([v, long]) => {
@@ -54,7 +56,7 @@
       const state = document.createElement('input'); state.type = 'hidden'; state.id = id + '-yn';
       const box = document.createElement('div'); box.className = 'yn-body';
       box.append(...body);
-      const g = buttons(title, v => pick(v), DESCRIPTIVE.test(title) ? OPTS.filter(o => o[0] !== 'N') : null);
+      const g = buttons(title, v => pick(v), DESCRIPTIVE.test(title) || NO_NEGATIVE.test(title) ? OPTS.filter(o => o[0] !== 'N') : null);
       row.append(t, g);
       wrap.append(row, state, box);
       function clearBody() {

@@ -1,3 +1,13 @@
+## Version 61 · 27 November 2026
+- HPC reads more smoothly whatever is answered Y, N or N/A:
+  - N answers become plain negatives ("No VTE risk factors", "Does not smoke or vape", "No anticoagulants, antiplatelets or NSAIDs") instead of "X: none"; qualifiers such as "if volunteered" or "and findings" are dropped.
+  - Questions where "no" means nothing (status, dates, plans, baseline, consent, follow-up and similar) offer Y and N/A only.
+  - Slashes between words read as "or" (units such as mg/kg are kept).
+  - Form-style headings become sentences ("Medication history includes …", "Pregnancy status is …").
+  - Denial lists no longer stack "or": "She denies nausea or vomiting, palpitations and syncope."
+  - Smoother wording for several anaphylaxis, hypoxia and dementia questions.
+- Tests: 106 checks, including new fluency checks.
+
 # ED History Studio — version 55
 
 Open index.html directly in a browser, or use the live site. No build or dependency installation is needed to run it.

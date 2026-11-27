@@ -400,7 +400,7 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   await SY('Cough'); await g.locator('#symptoms button[aria-label="Fever — not applicable"]').click();
   await YN('General appearance and observations normal', 'Y');
   await g.waitForTimeout(600); let yn = await g.inputValue('#output');
-  check('Y/N/N/A: N writes "none", Y with detail writes the detail, N/A writes nothing', /VTE risk factors: none\./.test(yn) && /Smoking and vaping history: never smoked\./.test(yn) && !/exposures/i.test(yn) && !/fever/i.test(yn), yn.slice(0, 500));
+  check('Y/N/N/A: N writes a plain negative, Y with detail writes the detail, N/A writes nothing', /No VTE risk factors\./.test(yn) && /Smoking and vaping history includes never smoked\./.test(yn) && !/exposures/i.test(yn) && !/fever/i.test(yn), yn.slice(0, 500));
   check('Y/N/N/A: "Normal? Y" on an exam system records its normal findings', /General appearance and observations\nPatient in no distress/.test(yn));
   check('Y/N/N/A: history questions collapse until Y', await g.isHidden('#f0') && await g.isVisible('#f9'));
   await g.selectOption('#condition', 'Chest pain'); await g.waitForTimeout(300); await g.selectOption('#condition', 'Hypoxia'); await g.waitForTimeout(500);
@@ -483,6 +483,18 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   check('Auto scores: turning automatic off leaves only scores added by hand', !/SCORES/.test(await note()));
   await clear();
   check('Auto scores: Clear encounter removes scores and turns automatic back on', !/SCORES/.test(await note()) && await page.isChecked('#score-auto') && (await page.locator('#score-added li:not(.waiting)').count()) === 0);
+
+  // 24. HPC fluency helpers
+  const fl = await page.evaluate(() => ({
+    neg: ['Cofactors: alcohol / exercise / NSAID / intercurrent illness', 'Anticoagulants / antiplatelets / NSAIDs / last doses', 'Smoking / vaping', 'Weapons / ongoing threats / relationship if volunteered'].map(ynNegative),
+    pol: polishHPC('Medication history: Ramipril. Pregnancy status: not pregnant. Nausea/vomiting noted at 10 mg/kg.'),
+    or3: joinOr(['nausea or vomiting', 'palpitations', 'syncope'])
+  }));
+  check('Fluency: N answers become plain negatives', fl.neg[0] === 'No cofactors (alcohol, exercise, NSAID or intercurrent illness)' && fl.neg[1] === 'No anticoagulants, antiplatelets or NSAIDs' && fl.neg[2] === 'Does not smoke or vape' && !/volunteered/.test(fl.neg[3]), fl.neg.join(' | '));
+  check('Fluency: form-style headings and slashes read as prose', fl.pol === 'Medication history includes ramipril. Pregnancy status is not pregnant. Nausea or vomiting noted at 10 mg/kg.', fl.pol);
+  check('Fluency: denial lists with an "or" inside join cleanly', fl.or3 === 'nausea or vomiting, palpitations and syncope', fl.or3);
+  const note0 = await note();
+  check('Fluency: no "X: none" stubs or "is/are …: none" left in the note', !/: none\b/i.test(note0), note0);
 
   check('No script errors', errors.length === 0, errors.join(' | '));
   await browser.close();

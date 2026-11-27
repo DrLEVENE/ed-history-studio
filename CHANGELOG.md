@@ -1,5 +1,15 @@
 # Changelog
 
+## Version 61 · 27 November 2026
+- HPC reads more smoothly whatever is answered Y, N or N/A:
+  - N answers become plain negatives ("No VTE risk factors", "Does not smoke or vape", "No anticoagulants, antiplatelets or NSAIDs") instead of "X: none"; qualifiers such as "if volunteered" or "and findings" are dropped.
+  - Questions where "no" means nothing (status, dates, plans, baseline, consent, follow-up and similar) offer Y and N/A only.
+  - Slashes between words read as "or" (units such as mg/kg are kept).
+  - Form-style headings become sentences ("Medication history includes …", "Pregnancy status is …").
+  - Denial lists no longer stack "or": "She denies nausea or vomiting, palpitations and syncope."
+  - Smoother wording for several anaphylaxis, hypoxia and dementia questions.
+- Tests: 106 checks, including new fluency checks.
+
 ## Version 60 — 27 November 2026
 Simpler answering with Y / N / N/A, at Dr Levene's request ("the checklist is getting too laborious").
 - Symptoms: each row has Y (present), N (denied) and N/A (not relevant). Tap again to clear. Only Y and N go into the note. "Mark the rest N" replaces "Mark the rest as asked and denied".
