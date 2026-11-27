@@ -1,5 +1,19 @@
 # Changelog
 
+## Version 60 — 27 November 2026
+Simpler answering with Y / N / N/A, at Dr Levene's request ("the checklist is getting too laborious").
+- Symptoms: each row has Y (present), N (denied) and N/A (not relevant). Tap again to clear. Only Y and N go into the note. "Mark the rest N" replaces "Mark the rest as asked and denied".
+- History: questions with a typed box or a multiple-choice list collapse to one line with Y / N / N/A.
+  - Y opens the box or chips for detail.
+  - N writes "…: none" (for example "VTE risk factors: none.").
+  - N/A hides the question and writes nothing.
+  - Descriptive questions (duration, site, onset, measured values) offer only Y and N/A.
+  - One-tap descriptive chips (onset, site, character, severity, progression) are unchanged.
+- Examination: each system has "Normal? Y / N / N/A". Y ticks that system's normal findings and closes the card. N opens it to choose abnormal findings. N/A clears it and writes nothing. Choosing findings by hand still works and updates the buttons.
+- Scores: each criterion (Wells, PERC, CURB-65 and others) is one row with Y / N / N/A; N/A scores zero. "Mark the rest N" answers the remainder.
+- Answers are kept per presentation and cleared by Clear encounter.
+- 5 new automated checks (102 in total).
+
 ## Version 59 — 26 November 2026
 - The HPC opens with the demographics ("64-year-old man presents with…") instead of "This 64-year-old man…".
 - New Calculations section under INVESTIGATIONS, in the card and in the note, worked from the results and age and sex. Each line names its formula:

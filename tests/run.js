@@ -258,6 +258,7 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   await g.goto(base + '/index.html');
   await g.selectOption('#condition', 'UTI / Dysuria');
   await g.fill('#pc0', 'burning on passing urine');
+  await g.evaluate(() => window.edYN.open([...document.querySelectorAll('#fields label')].find(l => /Onset \/ duration \/ course/.test(l.textContent))));
   await g.locator('#fields label', { hasText: 'Onset / duration / course' }).first().locator('input').fill('started 3 days ago with no recall of of any trigger');
   await g.locator('#symptoms .rapid-row').filter({ has: g.locator('span', { hasText: /^Dysuria$/ }) }).locator('button[data-value=present]').click();
   await g.locator('#symptoms .rapid-row').filter({ has: g.locator('span', { hasText: /^Suprapubic pain$/ }) }).locator('button[data-value=present]').click();
@@ -326,7 +327,7 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
 
   // 20. Diagnosis support: rule-based, on the device
   await clearG();
-  const H = async t => g.locator('#fields label:visible, #fields button:visible', { hasText: new RegExp('^' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$') }).first().click();
+  const H = async t => { await g.evaluate(t => { const el = [...document.querySelectorAll('#fields label, #fields button')].find(x => x.textContent.trim() === t); if (el) window.edYN.open(el); }, t); await g.locator('#fields label:visible, #fields button:visible', { hasText: new RegExp('^' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$') }).first().click(); };
   const SY = (n, v) => g.locator(`#symptoms button[aria-label="${n} — ${v || 'present'}"]`).click();
   const dxTop = async () => { await g.waitForTimeout(400); return g.$$eval('#dx-out .ai-dx:not(.ai-mnm) h3', hs => hs.map(h => h.textContent.replace(/^\d\.\s*/, ''))); };
   await g.selectOption('#condition', 'Chest pain'); await g.fill('#age', '62');
@@ -391,6 +392,21 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   check('Dementia: an acute fluctuating change with fever ranks delirium first, then infection', top3[0] === 'Delirium superimposed on dementia' && top3[1] === 'Infection (urinary, chest or skin)', top3.join(' > '));
   check('Dementia: the note keeps eponyms capitalised and suggests 4AT', /The dementia is described as Alzheimer disease\./.test(dn) && (await g.locator('#score-suggest button').allTextContents())[0] === '4AT', dn.slice(0, 400));
   await clearG();
+  // 23. Y / N / N/A answering
+  await clearG(); await g.selectOption('#condition', 'Hypoxia'); await g.fill('#pc0', 'low oxygen');
+  const YN = (name, v) => g.locator(`button[aria-label="${name} — ${{ Y: 'Yes', N: 'No', NA: 'Not applicable' }[v]}"]`).first().click();
+  await YN('VTE risk factors', 'N'); await YN('Possible exposures', 'NA');
+  await YN('Smoking / vaping', 'Y'); await g.fill('#f9', 'never smoked');
+  await SY('Cough'); await g.locator('#symptoms button[aria-label="Fever — not applicable"]').click();
+  await YN('General appearance and observations normal', 'Y');
+  await g.waitForTimeout(600); let yn = await g.inputValue('#output');
+  check('Y/N/N/A: N writes "none", Y with detail writes the detail, N/A writes nothing', /VTE risk factors: none\./.test(yn) && /Smoking and vaping history: never smoked\./.test(yn) && !/exposures/i.test(yn) && !/fever/i.test(yn), yn.slice(0, 500));
+  check('Y/N/N/A: "Normal? Y" on an exam system records its normal findings', /General appearance and observations\nPatient in no distress/.test(yn));
+  check('Y/N/N/A: history questions collapse until Y', await g.isHidden('#f0') && await g.isVisible('#f9'));
+  await g.selectOption('#condition', 'Chest pain'); await g.waitForTimeout(300); await g.selectOption('#condition', 'Hypoxia'); await g.waitForTimeout(500);
+  check('Y/N/N/A: answers survive switching presentation and back', (await g.getAttribute('button[aria-label="VTE risk factors — No"]', 'aria-pressed')) === 'true' && await g.inputValue('#f9') === 'never smoked');
+  await clearG();
+  check('Y/N/N/A: Clear encounter clears the answers', (await g.getAttribute('button[aria-label="VTE risk factors — No"]', 'aria-pressed')) !== 'true');
   check('No feature sends anything off the device', leaving.length === 0, leaving.join(', '));
   server.close();
 
@@ -415,6 +431,7 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   await page.selectOption('#condition', 'Hypoxia'); await settle();
   await page.fill('#pc0', 'low oxygen saturations');
   await page.locator('#fields label:visible, #fields button:visible', { hasText: 'Over hours' }).first().click();
+  await page.evaluate(() => window.edYN.open([...document.querySelectorAll('#fields label')].find(x => x.textContent.trim() === 'COPD')));
   await page.locator('#fields label:visible, #fields button:visible', { hasText: 'COPD' }).first().click();
   await page.locator('#exam label:visible', { hasText: 'Good oximeter waveform' }).first().click();
   await settle();
@@ -456,7 +473,7 @@ const check = (name, ok, detail = '') => results.push({ name, ok: !!ok, detail }
   await g0Sym(page, 'Haemoptysis', 'present'); await settle();
   await page.locator('#score-suggest button', { hasText: 'Wells PE' }).click();
   check('Auto scores: Wells PE waits until every criterion is answered', !/Wells PE/.test(await note()));
-  const autoHr = await page.locator('input[name="sc-wellspe-hr"][value="true"]').isChecked(), autoHaem = await page.locator('input[name="sc-wellspe-haem"][value="true"]').isChecked();
+  const autoHr = (await page.getAttribute('#sc-wellspe-hr button[data-v="true"]', 'aria-pressed')) === 'true', autoHaem = (await page.getAttribute('#sc-wellspe-haem button[data-v="true"]', 'aria-pressed')) === 'true';
   await page.click('#score-rest'); await settle();
   check('Auto scores: heart rate and a haemoptysis symptom fill Wells PE; the rest marked absent', autoHr && autoHaem && /Wells PE 2\.5\/12\.5 \(heart rate over 100 \+1\.5, haemoptysis \+1\): PE unlikely/.test(await note()), await note());
   await page.locator('#score-added button[aria-label="Remove HEART from the note"]').click(); await settle();

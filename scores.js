@@ -224,7 +224,7 @@
         if (a != null && it.units && !s.touched.has(it.k)) s.values[it.k + '_unit'] = 0;
       }
       const val = s.values[it.k];
-      if (it.kind === 'check') { if (val == null) { missing.push(lowerFirst(it.label)); continue; } pts[it.k] = val ? it.pts : 0; sel[it.k] = !!val; continue; }
+      if (it.kind === 'check') { if (val == null) { missing.push(lowerFirst(it.label)); continue; } pts[it.k] = val === true ? it.pts : 0; sel[it.k] = val === true; continue; }
       if (it.kind === 'choice') { if (val == null) { missing.push(it.label); continue; } sel[it.k] = val; pts[it.k] = it.opts[val][1]; continue; }
       const n = num(val), factor = it.units ? it.units[s.values[it.k + '_unit'] || 0][1] : 1;
       if (n == null) { missing.push(it.label); continue; }
@@ -343,24 +343,27 @@
     });
     if (checks.length) {
       const head = document.createElement('div'); head.className = 'score-checkhead';
-      const t = document.createElement('span'); t.className = 'lbl'; t.textContent = 'Criteria: answer each one';
-      const rest = document.createElement('button'); rest.type = 'button'; rest.className = 'secondary'; rest.id = 'score-rest'; rest.textContent = 'Mark the rest absent';
+      const t = document.createElement('span'); t.className = 'lbl'; t.textContent = 'Criteria: Y, N or N/A for each';
+      const rest = document.createElement('button'); rest.type = 'button'; rest.className = 'secondary'; rest.id = 'score-rest'; rest.textContent = 'Mark the rest N';
       rest.onclick = () => { checks.forEach(it => { if (s.values[it.k] == null) { s.values[it.k] = false; s.touched.add(it.k); } }); syncChecks(); changed(); };
       head.append(t, rest); panel.append(head);
       if (checks.some(it => it.auto)) { const n = fromPageTag(); n.textContent = 'Some answers follow your symptoms, history and observations; check them.'; panel.append(n); }
       checks.forEach(it => {
-        const wrap = document.createElement('div'); wrap.className = 'score-item score-crit';
+        // One row per criterion: Y (present), N (absent), N/A (not applicable, scores 0).
         const id = 'sc-' + openKey + '-' + it.k;
-        const lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.id = id + '-lbl'; lbl.textContent = it.label;
-        const row = document.createElement('div'); row.className = 'quick-options'; row.setAttribute('role', 'radiogroup'); row.setAttribute('aria-labelledby', lbl.id);
-        [[true, openKey === 'perc' ? 'Present' : 'Present (' + signed(it.pts) + ')'], [false, 'Absent']].forEach(([v, text]) => {
-          const l = document.createElement('label'), inp = document.createElement('input');
-          inp.type = 'radio'; inp.name = id; inp.value = String(v); inp.checked = s.values[it.k] === v;
-          inp.onchange = () => { s.values[it.k] = v; s.touched.add(it.k); changed(); };
-          l.append(inp, text); row.append(l);
+        const row = document.createElement('div'); row.className = 'rapid-row score-yn'; row.id = id;
+        const t = document.createElement('span'); t.textContent = it.label + (openKey === 'perc' ? '' : ' (' + signed(it.pts) + ')');
+        row.append(t);
+        [[true, 'Y', 'present'], [false, 'N', 'absent'], ['na', 'N/A', 'not applicable']].forEach(([v, text, long]) => {
+          const b = document.createElement('button'); b.type = 'button'; b.textContent = text;
+          b.dataset.value = v === true ? 'present' : v === false ? 'absent' : 'na'; b.dataset.v = String(v);
+          b.setAttribute('aria-label', it.label + ' — ' + long); b.setAttribute('aria-pressed', String(s.values[it.k] === v));
+          b.onclick = () => { s.values[it.k] = s.values[it.k] === v ? undefined : v; s.touched.add(it.k); syncChecks(); changed(); };
+          row.append(b);
         });
-        wrap.append(lbl, row); panel.append(wrap);
+        panel.append(row);
       });
+      panel.lastChild.classList.add('score-yn-last');
     }
     const out = document.createElement('p'); out.className = 'score-result'; out.id = 'score-result'; out.setAttribute('role', 'status');
     const actions = document.createElement('div'); actions.className = 'actions';
@@ -395,7 +398,7 @@
     if (!openKey) return;
     const s = st(openKey);
     SCORES[openKey].items.filter(it => it.kind === 'check').forEach(it =>
-      document.querySelectorAll('input[name="sc-' + openKey + '-' + it.k + '"]').forEach(r => { r.checked = s.values[it.k] === (r.value === 'true'); }));
+      document.querySelectorAll('#sc-' + openKey + '-' + it.k + ' button').forEach(b => b.setAttribute('aria-pressed', String(String(s.values[it.k]) === b.dataset.v))));
   }
 
   function update() {

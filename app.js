@@ -222,6 +222,8 @@ function symptomSentences(groups){
   return out;
 }
 function joinClinical(items){const a=items.map(String).map(x=>x.trim()).filter(Boolean);return a.length<2?(a[0]||''):a.length===2?a.join(' and '):a.slice(0,-1).join(', ')+', and '+a[a.length-1]}
+// A history question answered N: its short name (before any " / " or bracket), as in "VTE risk factors: none."
+function ynLabel(label){return label.split(/\s+\/\s+|\s*\(/)[0].trim()}
 function lowerClinicalStart(value){return /^[A-Z][a-z]/.test(value)&&!/^(Alzheimer|Lewy|Parkinson|Huntington|Wernicke|Korsakoff|Creutzfeldt|Down|Bell|Baker|Crohn|Graves|Addison|Cushing)\b/.test(value)?value.charAt(0).toLowerCase()+value.slice(1):value}
 function cleanClinical(value){return String(value||'').trim().replace(/[.!?]+$/,'')}
 function sentenceClinical(value){const v=cleanClinical(value);return v?v+'.':''}
@@ -262,7 +264,7 @@ function fluentHistory(name,values,hasPCDuration){const out=[],used=new Set();co
 // Combine pain descriptors into one sentence without assuming missing features.
 const pain=name==='Chest pain'?{site:3,char:4,rad:5,sev:6}:name==='Headache'?{char:5,sev:6}:null;
 if(pain){const phrases=[];if(pain.site!==undefined&&values[pain.site]){phrases.push('located in '+lowerClinicalStart(clinicalList(values[pain.site])).replace(/^central \/ retrosternal$/i,'the central/retrosternal chest'));used.add(pain.site)}if(values[pain.char]){phrases.push('described as '+lowerClinicalStart(clinicalList(values[pain.char])));used.add(pain.char)}if(values[pain.sev]){const v=cleanClinical(values[pain.sev]);phrases.push('rated '+v+(/^\d+(?:\.\d+)?$/.test(v)?'/10':''));used.add(pain.sev)}if(phrases.length)out.push(sentenceClinical('The pain is '+joinClinical(phrases)));if(pain.rad!==undefined&&values[pain.rad]){const v=cleanClinical(values[pain.rad]);used.add(pain.rad);out.push(sentenceClinical(/^no radiation$/i.test(v)?'There is no reported radiation':'Radiation is described as '+clinicalList(v).replace(/\b([A-Z])([a-z]+)\b/g,(m,x,y)=>x.toLowerCase()+y)))}}
-configs[name].fields.forEach(([label],i)=>{if(used.has(i)||!cleanClinical(values[i])||(name==='Fracture'&&[1,2].includes(i)))return;if(label==='Duration'){if(!hasPCDuration){used.add(i);out.push(sentenceClinical('Symptoms have been present for '+durationWords(values[i])));}return}if(label==='Progression'){const v=cleanClinical(values[i]),known={Improving:'Symptoms have been improving',Worsening:'Symptoms have been worsening',Intermittent:'Symptoms are intermittent',Persistent:'Symptoms are persistent','Sudden onset':'Symptoms began suddenly','Gradual onset':'Symptoms began gradually'};used.add(i);out.push(sentenceClinical(known[v]||'The course is described as '+clinicalList(v)));return}if(label.startsWith('Aggravating')){const plain={'Exertion worsens':'worse on exertion','Inspiration worsens':'worse on inspiration','Movement worsens':'worse on movement','Palpation reproduces':'reproduced by palpation','Meals worsen':'worse after meals','Rest relieves':'relieved by rest','Position affects pain':'affected by position'};const parts=cleanClinical(values[i]).split(/\s*[,;]\s*(?:and\s+)?|\s+and\s+/).filter(Boolean);if(parts.length&&parts.every(x=>plain[x])){used.add(i);out.push(sentenceClinical('The pain is '+joinClinical(parts.map(x=>plain[x]))));return}}const template=narrativeTemplates[name]?.[i]||(label.startsWith('Treatment before arrival')?'Pre-arrival treatment and response were {v}':null);if(!template)throw Error('Missing narrative template for '+name+' / '+label);sentence(i,template)});return out}
+configs[name].fields.forEach(([label],i)=>{const yn=$('f'+i+'-yn');if(yn&&yn.value==='N'&&!used.has(i)&&!cleanClinical(values[i])){used.add(i);out.push(sentenceClinical(ynLabel(label)+': none'));return}if(used.has(i)||!cleanClinical(values[i])||(name==='Fracture'&&[1,2].includes(i)))return;if(label==='Duration'){if(!hasPCDuration){used.add(i);out.push(sentenceClinical('Symptoms have been present for '+durationWords(values[i])));}return}if(label==='Progression'){const v=cleanClinical(values[i]),known={Improving:'Symptoms have been improving',Worsening:'Symptoms have been worsening',Intermittent:'Symptoms are intermittent',Persistent:'Symptoms are persistent','Sudden onset':'Symptoms began suddenly','Gradual onset':'Symptoms began gradually'};used.add(i);out.push(sentenceClinical(known[v]||'The course is described as '+clinicalList(v)));return}if(label.startsWith('Aggravating')){const plain={'Exertion worsens':'worse on exertion','Inspiration worsens':'worse on inspiration','Movement worsens':'worse on movement','Palpation reproduces':'reproduced by palpation','Meals worsen':'worse after meals','Rest relieves':'relieved by rest','Position affects pain':'affected by position'};const parts=cleanClinical(values[i]).split(/\s*[,;]\s*(?:and\s+)?|\s+and\s+/).filter(Boolean);if(parts.length&&parts.every(x=>plain[x])){used.add(i);out.push(sentenceClinical('The pain is '+joinClinical(parts.map(x=>plain[x]))));return}}const template=narrativeTemplates[name]?.[i]||(label.startsWith('Treatment before arrival')?'Pre-arrival treatment and response were {v}':null);if(!template)throw Error('Missing narrative template for '+name+' / '+label);sentence(i,template)});return out}
 
 let noteStale=false;
 // Entries changed after generation make the note stale; copying is blocked until it is regenerated.
@@ -281,7 +283,7 @@ async function copyNote(part){if(noteStale&&!noteEdited)liveUpdate();if(!$('outp
 $('copy').onclick=()=>copyNote();document.querySelectorAll('.copyparts button').forEach(b=>b.onclick=()=>copyNote(b.dataset.part));
 $('timenow').onclick=()=>{const d=new Date();$('timeseen').value=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');$('timeseen').dispatchEvent(new Event('input',{bubbles:true}))};
 $('addpc').onclick=()=>{readPC();pcRows.push({complaint:'',duration:''});renderPC()};
-$('reset').onclick=()=>{if(!confirm('Clear this encounter, all presentation drafts and medication orders?'))return;drafts={};window.edScoresClear?.();window.edLabsClear?.();window.edDxClear?.();obsValues={};$('timeseen').value='';pcRows=[{complaint:'',duration:''}];medOrders=[];document.querySelectorAll('#how input').forEach(e=>e.checked=false);document.querySelectorAll('#intro input:not([type=checkbox]),#intro select,#plan,#weight,#medname,#route,#dose,#maxdose,#strengthmg,#strengthml,#frequency,#reference').forEach(e=>e.value='');$('ageunit').value='years';$('source').value='Patient';$('medlist').textContent='';$('doseout').textContent='';$('paeds').checked=false;$('verified').checked=false;$('medpanel').hidden=true;noteStale=false;noteEdited=false;encounterDirty=false;renderPC();renderForm();$('status').textContent='Encounter cleared.'};
+$('reset').onclick=()=>{if(!confirm('Clear this encounter, all presentation drafts and medication orders?'))return;drafts={};window.edScoresClear?.();window.edYNClear?.();window.edLabsClear?.();window.edDxClear?.();obsValues={};$('timeseen').value='';pcRows=[{complaint:'',duration:''}];medOrders=[];document.querySelectorAll('#how input').forEach(e=>e.checked=false);document.querySelectorAll('#intro input:not([type=checkbox]),#intro select,#plan,#weight,#medname,#route,#dose,#maxdose,#strengthmg,#strengthml,#frequency,#reference').forEach(e=>e.value='');$('ageunit').value='years';$('source').value='Patient';$('medlist').textContent='';$('doseout').textContent='';$('paeds').checked=false;$('verified').checked=false;$('medpanel').hidden=true;noteStale=false;noteEdited=false;encounterDirty=false;renderPC();renderForm();$('status').textContent='Encounter cleared.'};
 $('paeds').onchange=()=>{$('medpanel').hidden=!$('paeds').checked};
 // Arithmetic only: dosing rules are entered by clinician, not supplied by this application.
 function calculateDose(){const w=Number($('weight').value),d=Number($('dose').value),cap=Number($('maxdose').value);if(!Number.isFinite(w)||w<=0||!Number.isFinite(d)||d<=0||!Number.isFinite(cap)||cap<=0)throw Error('Enter positive weight, prescribed mg/kg/dose and maximum mg per dose.');const raw=w*d,mg=Math.min(raw,cap);const sm=$('strengthmg').value,sv=$('strengthml').value;let ml=null;if(sm||sv){if(!(Number(sm)>0&&Number(sv)>0))throw Error('Enter both concentration values as positive numbers.');ml=mg/Number(sm)*Number(sv)}return {raw,mg,ml,capped:raw>cap}}
@@ -347,16 +349,16 @@ function refreshSymptoms(){
 }
 function renderSymptoms(names){
   const panel=$('symptoms');panel.replaceChildren();
-  panel.previousElementSibling.textContent='Tap + if present, − if denied. Tap again to clear. Untouched symptoms stay out of the note.';
+  panel.previousElementSibling.textContent='Y if present, N if denied, N/A if not relevant. Tap again to clear. Only Y and N go into the note.';
   const sensitive=['Sexual assault','Physical assault'].includes(active);
   names.forEach((name,i)=>{
     const row=document.createElement('div');row.className='rapid-row';
     const label=document.createElement('span');label.textContent=name;
     const state=document.createElement('input');state.type='hidden';state.id='s'+i;
     row.append(label,state);
-    for(const [value,symbol] of [['present','+'],['absent','−']]){
+    for(const [value,symbol] of [['present','Y'],['absent','N'],['na','N/A']]){
       const button=document.createElement('button');button.type='button';button.dataset.value=value;
-      button.textContent=symbol;button.setAttribute('aria-label',name+' — '+(value==='absent'?'denied':'present'));
+      button.textContent=symbol;button.setAttribute('aria-label',name+' — '+(value==='absent'?'denied':value==='na'?'not applicable':'present'));
       button.onclick=()=>{state.value=state.value===value?'':value;refreshSymptoms()};row.append(button);
     }
     if(sensitive || ['Dizziness','Difficulty swallowing','Breast lump','Acute confusional state'].includes(active)){
@@ -368,7 +370,7 @@ function renderSymptoms(names){
   });
   if(!sensitive){
     const denied=document.createElement('button');denied.type='button';denied.className='secondary wide';
-    denied.textContent='Mark the rest as asked and denied';
+    denied.textContent='Mark the rest N (asked and denied)';
     denied.onclick=()=>{const blank=[...panel.querySelectorAll('.rapid-row:not([hidden]) input')].filter(field=>!field.value);if(!blank.length)return;if(!confirm('Record '+blank.length+' remaining symptom'+(blank.length===1?'':'s')+' as asked and denied? Confirm only if each one was asked.'))return;for(const field of blank)field.value='absent';refreshSymptoms();markStale()};
     panel.append(denied);
   }
